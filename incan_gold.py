@@ -13,7 +13,46 @@ class Player():
     def playon(self, turn):
         return self.strat(turn, self.backpack)
 
-def strat_turn(turn, backpack):
+class Cards():
+    def __init__(self):
+        self.deck = [1, 2, 3, 4, 5, 5, 7, 7, 9, 11, 11, 13, 14, 15, 17, \
+                     "artifact", "artifact", "artifact", "artifact", "artifact", \
+                     "fire", "fire", "fire", \
+                     "snake", "snake", "snake", \
+                     "mummy", "mummy", "mummy", \
+                     "rocks", "rocks", "rocks", \
+                     "spiders", "spiders", "spiders"]
+        self.gem_num_deck = 15
+        self.gem_num_table = 0
+        self.gem_value_deck = 124
+        self.gem_value_table = 0
+        self.artifact_deck = 5
+        self.artifact_table = 0
+        self.artifact_discard = 0
+        self.table = []
+        self.discard = []
+        self.fire_deck = 3
+        self.fire_table = 0
+        self.fire_discard = 0
+        self.snake_deck = 3
+        self.snake_table = 0
+        self.snake_discard = 0
+        self.mummy_deck = 3
+        self.mummy_table = 0
+        self.mummy_discard = 0
+        self.rocks_deck = 3
+        self.rocks_table = 0
+        self.rocks_discard = 0
+        self.spiders_deck = 3
+        self.spiders_table = 0
+        self.spiders_discard = 0
+
+
+
+blah = Cards()
+
+
+"""def strat_turn(turn, backpack):
     return turn <= 3
 # strat_turn = lambda turn, backpack: turn <= 3
 
@@ -172,3 +211,4 @@ def game(player_list):
 
 game(player_list)
 
+"""
