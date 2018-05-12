@@ -15,45 +15,118 @@ class Player():
 
 class Cards():
     def __init__(self):
-        self.deck = [1, 2, 3, 4, 5, 5, 7, 7, 9, 11, 11, 13, 14, 15, 17, \
-                     "artifact", "artifact", "artifact", "artifact", "artifact", \
-                     "fire", "fire", "fire", \
-                     "snake", "snake", "snake", \
-                     "mummy", "mummy", "mummy", \
-                     "rocks", "rocks", "rocks", \
-                     "spiders", "spiders", "spiders"]
-        self.gem_num_deck = 15
-        self.gem_num_table = 0
-        self.gem_value_deck = 124
-        self.gem_value_table = 0
-        self.artifact_deck = 5
+        self.deck_list = ["artifact", \
+                          "fire", "fire", "fire", \
+                          "mummy", "mummy", "mummy", \
+                          "rocks", "rocks", "rocks", \
+                          "snake", "snake", "snake", \
+                          "spiders", "spiders", "spiders", \
+                          1, 2, 3, 4, 5, 5, 7, 7, 9, 11, 11, 13, 14, 15, 17]
+
+        self.table_list = []
+        self.discard_list = []
+        self.reserve_list = ["artifact", "artifact", "artifact", "artifact"]
+
+        self.artifact_deck = 1
         self.artifact_table = 0
         self.artifact_discard = 0
-        self.table = []
-        self.discard = []
+        self.artifact_reserve = 4
+
         self.fire_deck = 3
         self.fire_table = 0
         self.fire_discard = 0
-        self.snake_deck = 3
-        self.snake_table = 0
-        self.snake_discard = 0
         self.mummy_deck = 3
         self.mummy_table = 0
         self.mummy_discard = 0
         self.rocks_deck = 3
         self.rocks_table = 0
         self.rocks_discard = 0
+        self.snake_deck = 3
+        self.snake_table = 0
+        self.snake_discard = 0
         self.spiders_deck = 3
         self.spiders_table = 0
         self.spiders_discard = 0
 
-    def shuffle(self):
-        random.shuffle(self.deck)
-        print(self.deck)
+        self.gem_num_deck = 15
+        self.gem_num_table = 0
+        self.gem_value_deck = 124
+        self.gem_value_table = 0
 
+    def shuffle(self):
+        random.shuffle(self.deck_list)
+        print(self.deck_list)
+
+    def deal(self):
+        #print("deck", self.deck_list)
+        card = self.deck_list.pop(0)
+        self.table_list.append(card)
+        if card == "artifact":
+            self.artifact_deck += -1
+            self.artifact_table += 1
+        elif card == "fire":
+            self.fire_deck += -1
+            self.fire_table += 1
+        elif card == "mummy":
+            self.mummy_deck += -1
+            self.mummy_table += 1
+        elif card == "rocks":
+            self.rocks_deck += -1
+            self.rocks_table += 1
+        elif card == "snake":
+            self.snake_deck += -1
+            self.snake_table += 1
+        elif card == "spiders":
+            self.spiders_deck += -1
+            self.spiders_table += 1
+        else:
+            self.gem_num_deck += -1
+            self.gem_num_table += 1
+            self.gem_value_deck += -card
+            self.gem_value_table += card
+
+        print("card", card)
+        print("deck", self.deck_list)
+        print("table", self.table_list)
+        print("discard", self.discard_list)
+        print("reserve", self.reserve_list)
+        print(\
+        "art",\
+        self.artifact_deck,\
+        self.artifact_table,\
+        self.artifact_discard,\
+        self.artifact_reserve,\
+        "fire",\
+        self.fire_deck,\
+        self.fire_table,\
+        self.fire_discard,\
+        "mummy",\
+        self.mummy_deck,\
+        self.mummy_table,\
+        self.mummy_discard,\
+        "rocks",\
+        self.rocks_deck,\
+        self.rocks_table,\
+        self.rocks_discard,\
+        "snake",\
+        self.snake_deck,\
+        self.snake_table,\
+        self.snake_discard,\
+        "spiders",\
+        self.spiders_deck,\
+        self.spiders_table,\
+        self.spiders_discard,\
+        "gems",\
+        self.gem_num_deck,\
+        self.gem_num_table,\
+        self.gem_value_deck,\
+        self.gem_value_table)
 
 blah = Cards()
 blah.shuffle()
+
+for i in range(31):
+    blah.deal()
 
 """def strat_turn(turn, backpack):
     return turn <= 3
