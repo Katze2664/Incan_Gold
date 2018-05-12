@@ -47,10 +47,13 @@ class Cards():
         self.spiders_table = 0
         self.spiders_discard = 0
 
+    def shuffle(self):
+        random.shuffle(self.deck)
+        print(self.deck)
 
 
 blah = Cards()
-
+blah.shuffle()
 
 """def strat_turn(turn, backpack):
     return turn <= 3
