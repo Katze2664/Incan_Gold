@@ -26,6 +26,7 @@ class Cards():
         self.table_list = []
         self.discard_list = []
         self.reserve_list = ["artifact", "artifact", "artifact", "artifact"]
+        self.gem_deck_list = [1, 2, 3, 4, 5, 5, 7, 7, 9, 11, 11, 13, 14, 15, 17]
 
         self.artifact_deck = 1
         self.artifact_table = 0
@@ -84,6 +85,7 @@ class Cards():
             self.gem_num_table += 1
             self.gem_value_deck += -card
             self.gem_value_table += card
+            self.gem_deck_list.remove(card)
 
         print("card", card)
         print("deck", self.deck_list)
@@ -122,10 +124,48 @@ class Cards():
         self.gem_value_deck,\
         self.gem_value_table)
 
+    def check_bust(self):
+        busted = False
+        if self.fire_table == 2:
+            busted = True
+            self.table_list.remove("fire")
+            self.discard_list.append("fire")
+            self.fire_table += -1
+            self.fire_discard += 1
+        elif self.mummy_table == 2:
+            busted = True
+            self.table_list.remove("mummy")
+            self.discard_list.append("mummy")
+            self.mummy_table += -1
+            self.mummy_discard += 1
+        elif self.rocks_table == 2:
+            busted = True
+            self.table_list.remove("rocks")
+            self.discard_list.append("rocks")
+            self.rocks_table += -1
+            self.rocks_discard += 1
+        elif self.snake_table == 2:
+            busted = True
+            self.table_list.remove("snake")
+            self.discard_list.append("snake")
+            self.snake_table += -1
+            self.snake_discard += 1
+        elif self.spiders_table == 2:
+            busted = True
+            self.table_list.remove("spiders")
+            self.discard_list.append("spiders")
+            self.spiders_table += -1
+            self.spiders_discard += 1
+        return busted
+
+
+
+
+
 blah = Cards()
 blah.shuffle()
 
-for i in range(31):
+while blah.check_bust() == False:
     blah.deal()
 
 """def strat_turn(turn, backpack):
