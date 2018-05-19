@@ -27,30 +27,13 @@ class Cards():
         self.discard_list = []
         self.reserve_list = ["artifact", "artifact", "artifact", "artifact"]
         self.gem_deck_list = [1, 2, 3, 4, 5, 5, 7, 7, 9, 11, 11, 13, 14, 15, 17]
+        self.gem_table_list = []
 
-        self.artifact_deck = 1
-        self.artifact_table = 0
-        self.artifact_discard = 0
-        self.artifact_reserve = 4
+        self.deck_dict = {"artifact":1, "fire":3, "rocks":3, "mummy":3, "snake":3, "spiders":3, 1:1, 2:1, 3:1, 4:1, 5:2, 7:2, 9:1, 11:2, 13:1, 14:1, 15:1, 17:1}
+        self.table_dict = {"artifact":0, "fire":0, "rocks":0, "mummy":0, "snake":0, "spiders":0, 1:0, 2:0, 3:0, 4:0, 5:0, 7:0, 9:0, 11:0, 13:0, 14:0, 15:0, 17:0}
+        self.discard_dict = {"artifact":0, "fire":0, "rocks":0, "mummy":0, "snake":0, "spiders":0, 1:0, 2:0, 3:0, 4:0, 5:0, 7:0, 9:0, 11:0, 13:0, 14:0, 15:0, 17:0}
+        self.reserve_dict = {"artifact":4, "fire":0, "rocks":0, "mummy":0, "snake":0, "spiders":0, 1:0, 2:0, 3:0, 4:0, 5:0, 7:0, 9:0, 11:0, 13:0, 14:0, 15:0, 17:0}
 
-        self.fire_deck = 3
-        self.fire_table = 0
-        self.fire_discard = 0
-        self.mummy_deck = 3
-        self.mummy_table = 0
-        self.mummy_discard = 0
-        self.rocks_deck = 3
-        self.rocks_table = 0
-        self.rocks_discard = 0
-        self.snake_deck = 3
-        self.snake_table = 0
-        self.snake_discard = 0
-        self.spiders_deck = 3
-        self.spiders_table = 0
-        self.spiders_discard = 0
-
-        self.gem_num_deck = 15
-        self.gem_num_table = 0
         self.gem_value_deck = 124
         self.gem_value_table = 0
 
@@ -62,111 +45,137 @@ class Cards():
         #print("deck", self.deck_list)
         card = self.deck_list.pop(0)
         self.table_list.append(card)
-        if card == "artifact":
-            self.artifact_deck += -1
-            self.artifact_table += 1
-        elif card == "fire":
-            self.fire_deck += -1
-            self.fire_table += 1
-        elif card == "mummy":
-            self.mummy_deck += -1
-            self.mummy_table += 1
-        elif card == "rocks":
-            self.rocks_deck += -1
-            self.rocks_table += 1
-        elif card == "snake":
-            self.snake_deck += -1
-            self.snake_table += 1
-        elif card == "spiders":
-            self.spiders_deck += -1
-            self.spiders_table += 1
-        else:
-            self.gem_num_deck += -1
-            self.gem_num_table += 1
+        self.deck_dict[card] += -1
+        self.table_dict[card] += 1
+        self.gem_deck2table(card)
+
+    def gem_deck2table(self, card):
+        if isinstance(card, int):
+            self.gem_deck_list.remove(card)
+            self.gem_table_list.append(card)
             self.gem_value_deck += -card
             self.gem_value_table += card
-            self.gem_deck_list.remove(card)
 
-        print("card", card)
-        print("deck", self.deck_list)
-        print("table", self.table_list)
-        print("discard", self.discard_list)
-        print("reserve", self.reserve_list)
-        print(\
-        "art",\
-        self.artifact_deck,\
-        self.artifact_table,\
-        self.artifact_discard,\
-        self.artifact_reserve,\
-        "fire",\
-        self.fire_deck,\
-        self.fire_table,\
-        self.fire_discard,\
-        "mummy",\
-        self.mummy_deck,\
-        self.mummy_table,\
-        self.mummy_discard,\
-        "rocks",\
-        self.rocks_deck,\
-        self.rocks_table,\
-        self.rocks_discard,\
-        "snake",\
-        self.snake_deck,\
-        self.snake_table,\
-        self.snake_discard,\
-        "spiders",\
-        self.spiders_deck,\
-        self.spiders_table,\
-        self.spiders_discard,\
-        "gems",\
-        self.gem_num_deck,\
-        self.gem_num_table,\
-        self.gem_value_deck,\
-        self.gem_value_table)
-
-    def check_bust(self):
-        busted = False
-        if self.fire_table == 2:
-            busted = True
-            self.table_list.remove("fire")
-            self.discard_list.append("fire")
-            self.fire_table += -1
-            self.fire_discard += 1
-        elif self.mummy_table == 2:
-            busted = True
-            self.table_list.remove("mummy")
-            self.discard_list.append("mummy")
-            self.mummy_table += -1
-            self.mummy_discard += 1
-        elif self.rocks_table == 2:
-            busted = True
-            self.table_list.remove("rocks")
-            self.discard_list.append("rocks")
-            self.rocks_table += -1
-            self.rocks_discard += 1
-        elif self.snake_table == 2:
-            busted = True
-            self.table_list.remove("snake")
-            self.discard_list.append("snake")
-            self.snake_table += -1
-            self.snake_discard += 1
-        elif self.spiders_table == 2:
-            busted = True
-            self.table_list.remove("spiders")
-            self.discard_list.append("spiders")
-            self.spiders_table += -1
-            self.spiders_discard += 1
-        return busted
-
-
-
-
+    def gem_table2deck(self, card):
+        if isinstance(card, int):
+            self.gem_table_list.remove(card)
+            self.gem_deck_list.append(card)
+            self.gem_value_table += -card
+            self.gem_value_deck += card
 
 blah = Cards()
 blah.shuffle()
 
-while blah.check_bust() == False:
+for i in range(3):
     blah.deal()
+    print(blah.deck_list)
+    print(blah.table_list)
+    print(blah.gem_value_deck)
+    print(blah.gem_value_table)
+
+
+
+"""if card == "artifact":
+    self.artifact_deck += -1
+    self.artifact_table += 1
+elif card == "fire":
+    self.fire_deck += -1
+    self.fire_table += 1
+elif card == "mummy":
+    self.mummy_deck += -1
+    self.mummy_table += 1
+elif card == "rocks":
+    self.rocks_deck += -1
+    self.rocks_table += 1
+elif card == "snake":
+    self.snake_deck += -1
+    self.snake_table += 1
+elif card == "spiders":
+    self.spiders_deck += -1
+    self.spiders_table += 1
+else:
+    self.gem_num_deck += -1
+    self.gem_num_table += 1
+    self.gem_value_deck += -card
+    self.gem_value_table += card
+    self.gem_deck_list.remove(card)
+
+print("card", card)
+print("deck", self.deck_list)
+print("table", self.table_list)
+print("discard", self.discard_list)
+print("reserve", self.reserve_list)
+print(\
+"art",\
+self.artifact_deck,\
+self.artifact_table,\
+self.artifact_discard,\
+self.artifact_reserve,\
+"fire",\
+self.fire_deck,\
+self.fire_table,\
+self.fire_discard,\
+"mummy",\
+self.mummy_deck,\
+self.mummy_table,\
+self.mummy_discard,\
+"rocks",\
+self.rocks_deck,\
+self.rocks_table,\
+self.rocks_discard,\
+"snake",\
+self.snake_deck,\
+self.snake_table,\
+self.snake_discard,\
+"spiders",\
+self.spiders_deck,\
+self.spiders_table,\
+self.spiders_discard,\
+"gems",\
+self.gem_num_deck,\
+self.gem_num_table,\
+self.gem_value_deck,\
+self.gem_value_table)
+
+def check_bust(self):
+busted = False
+if self.fire_table == 2:
+    busted = True
+    self.table_list.remove("fire")
+    self.discard_list.append("fire")
+    self.fire_table += -1
+    self.fire_discard += 1
+elif self.mummy_table == 2:
+    busted = True
+    self.table_list.remove("mummy")
+    self.discard_list.append("mummy")
+    self.mummy_table += -1
+    self.mummy_discard += 1
+elif self.rocks_table == 2:
+    busted = True
+    self.table_list.remove("rocks")
+    self.discard_list.append("rocks")
+    self.rocks_table += -1
+    self.rocks_discard += 1
+elif self.snake_table == 2:
+    busted = True
+    self.table_list.remove("snake")
+    self.discard_list.append("snake")
+    self.snake_table += -1
+    self.snake_discard += 1
+elif self.spiders_table == 2:
+    busted = True
+    self.table_list.remove("spiders")
+    self.discard_list.append("spiders")
+    self.spiders_table += -1
+    self.spiders_discard += 1
+return busted"""
+
+
+
+
+
+
 
 """def strat_turn(turn, backpack):
     return turn <= 3
