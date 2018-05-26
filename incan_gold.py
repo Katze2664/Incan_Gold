@@ -40,12 +40,40 @@ class Cards:
         print(self.counts)
         print(destination.counts)
 
-    def move_all(self, destination, cardtype="all"):
+    def move_all(self, destination):
+        while len(self.cardlist) > 0:
+            card = self.cardlist.pop()
+            self.counts[card] -= 1
+            destination.add(card)
+
+    def move_specific(self, destination, cardname):
         for i in range(len(self.cardlist)-1, -1, -1):
-            if cardtype == "all" or self.cardlist[i] == cardtype:
+            if self.cardlist[i] == cardname:
                 card = self.cardlist.pop(i)
                 self.counts[card] -= 1
                 destination.add(card)
+                if self.counts[card] == 0:
+                    break
+
+    def move_specific2(self, destination, cardname):
+        self.counts.setdefault(cardname, 0)
+        while self.counts[cardname] != 0:
+            self.cardlist.remove(cardname)
+            destination.add(cardname)
+        self.counts[cardname] = 0
+
+    def move_selected(self, destination, selected):
+        """ usage: x.move_selected(dest, lambda card: card == "artifact")
+                   x.move_selected(dest, lambda card: True)
+        Written by Harald"""
+        for i in range(len(self.cardlist)-1, -1, -1):
+            if selected(self.cardlist[i]):
+                card = self.cardlist.pop(i)
+                self.counts[card] -= 1
+                destination.add(card)
+
+
+
 
 
     # deal top card of deck to table
