@@ -1,6 +1,6 @@
 import random
 
-class Player():
+class Player:
     def __init__(self, name_, strat_):
         self.name = name_
         self.backpack = 0
@@ -13,65 +13,84 @@ class Player():
     def playon(self, turn):
         return self.strat(turn, self.backpack)
 
-class Cards():
-    def __init__(self):
-        self.deck_list = ["artifact", \
-                          "fire", "fire", "fire", \
-                          "mummy", "mummy", "mummy", \
-                          "rocks", "rocks", "rocks", \
-                          "snake", "snake", "snake", \
-                          "spiders", "spiders", "spiders", \
-                          1, 2, 3, 4, 5, 5, 7, 7, 9, 11, 11, 13, 14, 15, 17]
+class Cards:
+    def __init__(self, cardlist):
 
-        self.table_list = []
-        self.discard_list = []
-        self.reserve_list = ["artifact", "artifact", "artifact", "artifact"]
-        self.gem_deck_list = [1, 2, 3, 4, 5, 5, 7, 7, 9, 11, 11, 13, 14, 15, 17]
-        self.gem_table_list = []
+        self.cardlist = cardlist
+        self.counts = {}
+        for card in self.cardlist:
+            self.counts.setdefault(card, 0)
+            self.counts[card] += 1
+        print(self.counts)
 
-        self.deck_dict = {"artifact":1, "fire":3, "rocks":3, "mummy":3, "snake":3, "spiders":3, 1:1, 2:1, 3:1, 4:1, 5:2, 7:2, 9:1, 11:2, 13:1, 14:1, 15:1, 17:1}
-        self.table_dict = {"artifact":0, "fire":0, "rocks":0, "mummy":0, "snake":0, "spiders":0, 1:0, 2:0, 3:0, 4:0, 5:0, 7:0, 9:0, 11:0, 13:0, 14:0, 15:0, 17:0}
-        self.discard_dict = {"artifact":0, "fire":0, "rocks":0, "mummy":0, "snake":0, "spiders":0, 1:0, 2:0, 3:0, 4:0, 5:0, 7:0, 9:0, 11:0, 13:0, 14:0, 15:0, 17:0}
-        self.reserve_dict = {"artifact":4, "fire":0, "rocks":0, "mummy":0, "snake":0, "spiders":0, 1:0, 2:0, 3:0, 4:0, 5:0, 7:0, 9:0, 11:0, 13:0, 14:0, 15:0, 17:0}
-
-        self.gem_value_deck = 124
-        self.gem_value_table = 0
+    def add(self, card):
+        self.cardlist.append(card)
+        self.counts.setdefault(card, 0)
+        self.counts[card] += 1
 
     def shuffle(self):
-        random.shuffle(self.deck_list)
-        print(self.deck_list)
+        random.shuffle(self.cardlist)
+        print(self.cardlist)
 
-    def deal(self):
-        #print("deck", self.deck_list)
-        card = self.deck_list.pop(0)
+    def move_top(self, destination):
+        card = self.cardlist.pop(0)
+        self.counts[card] -= 1
+        destination.add(card)
+        print(card)
+        print(self.counts)
+        print(destination.counts)
+
+    def move_all(self, destination, cardtype="all"):
+        for i in range(len(self.cardlist)-1, -1, -1):
+            if cardtype == "all" or self.cardlist[i] == cardtype:
+                card = self.cardlist.pop(i)
+                self.counts[card] -= 1
+                destination.add(card)
+
+
+    # deal top card of deck to table
+    # take hazard card from table and discard it
+    # take all artifacts on table and give them to a player
+    # take artifact from reserve to the deck
+    # return all cards from table to deck during bust
+
+
+    def table2deck(self, card):
         self.table_list.append(card)
         self.deck_dict[card] += -1
         self.table_dict[card] += 1
-        self.gem_deck2table(card)
+        self.gem_table2deck(card)
 
-    def gem_deck2table(self, card):
-        if isinstance(card, int):
-            self.gem_deck_list.remove(card)
-            self.gem_table_list.append(card)
-            self.gem_value_deck += -card
-            self.gem_value_table += card
+    def table2discard(self, card):
+        self.table_list.remove(card)
+        self.discard_list.append(card)
+        self.table_dict[card] += -1
+        self.discard_dict[card] += 1
 
-    def gem_table2deck(self, card):
-        if isinstance(card, int):
-            self.gem_table_list.remove(card)
-            self.gem_deck_list.append(card)
-            self.gem_value_table += -card
-            self.gem_value_deck += card
+    def reserve2deck(self, card):
+        self.table_list.remove(card)
+        self.discard_list.append(card)
+        self.table_dict[card] += -1
+        self.discard_dict[card] += 1
 
-blah = Cards()
-blah.shuffle()
+deck = Cards(["artifact", "fire", "fire", "fire", "mummy", "mummy", "mummy", "rocks", "rocks", "rocks", "snake", "snake", "snake", "spiders", "spiders", "spiders", 1, 2, 3, 4, 5, 5, 7, 7, 9, 11, 11, 13, 14, 15, 17])
+table = Cards([])
+discard = Cards([])
+reserve = Cards(["artifact", "artifact", "artifact", "artifact"])
+
+deck.shuffle()
+deck.deal(table)
+
+"""blah.shuffle()
 
 for i in range(3):
     blah.deal()
     print(blah.deck_list)
     print(blah.table_list)
+    print(blah.deck_dict)
+    print(blah.table_dict)
     print(blah.gem_value_deck)
-    print(blah.gem_value_table)
+    print(blah.gem_value_table)"""
 
 
 
