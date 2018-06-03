@@ -1,14 +1,15 @@
+import time
 import random
 
 class Player:
-    def __init__(self, name_, strat_):
-        self.name = name_
+    def __init__(self, name, strat):
+        self.name = name
         self.backpack = 0
         self.tent = 0
-        self.art_tent = 0
+        self.artifacts = Cards([])
         self.explore = True
         self.leaving = False
-        self.strat = strat_
+        self.strat = strat
 
     def playon(self, turn):
         return self.strat(turn, self.backpack)
@@ -21,7 +22,6 @@ class Cards:
         for card in self.cardlist:
             self.counts.setdefault(card, 0)
             self.counts[card] += 1
-        print(self.counts)
 
     def add(self, card):
         self.cardlist.append(card)
@@ -30,84 +30,281 @@ class Cards:
 
     def shuffle(self):
         random.shuffle(self.cardlist)
-        print(self.cardlist)
 
     def move_top(self, destination):
-        card = self.cardlist.pop(0)
+        card = self.cardlist.pop()
         self.counts[card] -= 1
         destination.add(card)
-        print(card)
-        print(self.counts)
-        print(destination.counts)
+        return card
 
     def move_all(self, destination):
-        while len(self.cardlist) > 0:
+        while len(self.cardlist) != 0:
             card = self.cardlist.pop()
             self.counts[card] -= 1
             destination.add(card)
 
-    def move_specific(self, destination, cardname):
-        for i in range(len(self.cardlist)-1, -1, -1):
-            if self.cardlist[i] == cardname:
-                card = self.cardlist.pop(i)
-                self.counts[card] -= 1
-                destination.add(card)
-                if self.counts[card] == 0:
-                    break
-
-    def move_specific2(self, destination, cardname):
+    def move_allspecific(self, destination, cardname):
         self.counts.setdefault(cardname, 0)
         while self.counts[cardname] != 0:
             self.cardlist.remove(cardname)
+            self.counts[cardname] -= 1
             destination.add(cardname)
-        self.counts[cardname] = 0
 
-    def move_selected(self, destination, selected):
-        """ usage: x.move_selected(dest, lambda card: card == "artifact")
-                   x.move_selected(dest, lambda card: True)
-        Written by Harald"""
-        for i in range(len(self.cardlist)-1, -1, -1):
-            if selected(self.cardlist[i]):
-                card = self.cardlist.pop(i)
-                self.counts[card] -= 1
-                destination.add(card)
+# deal top card of deck to table
+# take hazard card from table and discard it
+# take all artifacts on table and give them to a player
+# take artifact from reserve to the deck
+# return all cards from table to deck during bust
 
 
 
 
 
-    # deal top card of deck to table
-    # take hazard card from table and discard it
-    # take all artifacts on table and give them to a player
-    # take artifact from reserve to the deck
-    # return all cards from table to deck during bust
 
 
-    def table2deck(self, card):
-        self.table_list.append(card)
-        self.deck_dict[card] += -1
-        self.table_dict[card] += 1
-        self.gem_table2deck(card)
 
-    def table2discard(self, card):
-        self.table_list.remove(card)
-        self.discard_list.append(card)
-        self.table_dict[card] += -1
-        self.discard_dict[card] += 1
+# Phases of the game:
+# Set up the deck, the players and the starting scores.
+# Each round, shuffle the deck.
+# Each turn, deal a card.
+# If bust, all exploring players leave and lose their backpack, discard a hazard, start clean-up.
+# Elif gem, distribute to exploring player's backpacks, remainder on table.
+# Players decide to stay or go.
+# If only one player leaves, they take any artifacts with them.
+# Repeat until bust or all players gone.
+# Clean-up: return table to deck, add artifact to deck.
+# Repaat for 5 rounds.
+# Determine winner and put score in log.
+# Repeat game to get average winner.
 
-    def reserve2deck(self, card):
-        self.table_list.remove(card)
-        self.discard_list.append(card)
-        self.table_dict[card] += -1
-        self.discard_dict[card] += 1
 
-deck = Cards(["artifact", "fire", "fire", "fire", "mummy", "mummy", "mummy", "rocks", "rocks", "rocks", "snake", "snake", "snake", "spiders", "spiders", "spiders", 1, 2, 3, 4, 5, 5, 7, 7, 9, 11, 11, 13, 14, 15, 17])
-table = Cards([])
-discard = Cards([])
-reserve = Cards(["artifact", "artifact", "artifact", "artifact"])
 
-deck.shuffle()
-deck.deal(table)
+
+
+def sim(games, players):
+
+    def busted(table):
+        hazards = ["fire", "mummy", "rocks", "snake", "spiders"]
+        for hazard in hazards:
+            table.counts.setdefault(hazard, 0)
+            if table.counts[hazard] == 2:
+                return True
+
+    for game in range(1, games+1):
+        deck = Cards(["artifact", "fire", "fire", "fire", "mummy", "mummy", "mummy", "rocks", "rocks", "rocks", "snake", "snake", "snake", "spiders", "spiders", "spiders", 1, 2, 3, 4, 5, 5, 7, 7, 9, 11, 11, 13, 14, 15, 17])
+        table = Cards([])
+        discard = Cards([])
+        reserve = Cards(["artifact", "artifact", "artifact", "artifact"])
+
+
+        for round in range(1, 6):
+            print("round", round)
+            turn = 0
+            table_gem = 0
+
+            num_players = len(players)
+            for player in players:
+                player.explore = True
+
+            deck.shuffle()
+            #print(deck.cardlist)
+            #print(deck.counts)
+            while num_players > 0:
+                turn += 1
+                #print("turn", turn)
+                card = deck.move_top(table)
+                print(card)
+                if busted(table):
+                    print("busted")
+                    print("table", table.cardlist)
+                    #print("num players", num_players)
+                    for player in players:
+                        if player.explore:
+                            player.explore = False
+                            num_players -= 1
+                            player.backpack = 0
+                    #print("num players", num_players)
+                    print("table gems", table_gem)
+                    #print("table", table.cardlist)
+                    #print("discard", discard.cardlist)
+                    table.move_top(discard)
+                    table_gem = 0
+                    print("table gems", table_gem)
+                    #print("table", table.cardlist)
+                    print("discard", discard.cardlist)
+                else:
+                    if isinstance(card, int):
+                        for player in players:
+                            if player.explore:
+                                player.backpack += card//num_players
+                                print(player.name, player.backpack)
+                        table_gem += card%num_players
+                        print("table gem", table_gem)
+
+
+            # For rounds 1 to 4, an artifact is added to the deck.
+            # Also, the table is returned to the deck.
+            if round <= 4:
+                table.move_all(deck)
+                reserve.move_top(deck)
+                #print(table.cardlist)
+                #print(reserve.cardlist)
+
+
+def strat_turn(turn, backpack):
+    return turn >= 3
+
+def strat_backpack(turn, backpack):
+    return backpack >= 5
+
+players = [Player("Ethan", strat_turn), Player("Harald", strat_backpack)]
+
+sim(1, players)
+
+
+
+
+"""num_explorers = len(player_list)
+art = 0
+art_taken = 0
+gems = 0
+fire = 0
+fire_discard = 0
+snake = 0
+snake_discard = 0
+mummy = 0
+mummy_discard = 0
+rocks = 0
+rocks_discard = 0
+spiders = 0
+spiders_discard = 0
+discarded = []
+turn = 0
+busted = False
+
+while num_explorers >= 1:
+    turn += 1
+    print("turn", turn)
+    card = random.choice(deck)
+    deck.remove(card)
+    print("card", card)
+    print("deck", deck)
+
+    if card == "art":
+        art += 1
+    elif card == "fire":
+        fire += 1
+        if fire == 2:
+            busted = True
+            deck.remove("fire")
+            discarded.append("fire")
+    elif card == "snake":
+        snake += 1
+        if snake == 2:
+            busted = True
+            deck.remove("snake")
+            discarded.append("snake")
+    elif card == "mummy":
+        mummy += 1
+        if mummy == 2:
+            busted = True
+            deck.remove("mummy")
+            discarded.append("mummy")
+    elif card == "rocks":
+        rocks += 1
+        if rocks == 2:
+            busted = True
+            deck.remove("rocks")
+            discarded.append("rocks")
+    elif card == "spiders":
+        spiders += 1
+        if spiders == 2:
+            busted = True
+            deck.remove("spiders")
+            discarded.append("spiders")
+    else:
+        if busted == False:
+            for player in player_list:
+                if player.explore == True:
+                    player.backpack += card//num_explorers
+                    print(player.name, "backpack", player.backpack)
+            gems += card%num_explorers
+    print("art {}, fire {}, snake {}, mummy {}, rocks {}, spiders {}, gems {}".format(art, fire, snake, mummy, rocks, spiders, gems))
+    print("deck", deck)
+    print("discarded", discarded)
+
+    print(harald.backpack, "harald backpack")
+
+    if busted == True:
+        for player in player_list:
+            if player.explore == True:
+                player.backpack = 0
+                player.explore = False
+                num_explorers += -1
+
+        gems = 0
+        art = 0
+
+    print(harald.backpack, "harald backpack2")
+
+    num_leaving = 0
+
+    for player in player_list:
+        if player.explore == True:
+            if player.playon(turn) == False:
+                player.explore = False
+                player.leaving = True
+                num_explorers += -1
+                num_leaving += 1
+                player.tent += player.backpack
+                player.backpack = 0
+
+    print(harald.backpack, "harald backpack3")
+
+    # distributing artifacts if a player is leaving alone on this turn
+    if num_leaving == 1:
+        for player in player_list:
+            if player.leaving == True:
+                while art != 0:
+                    player.art_tent += art
+                    if art_taken <= 3:
+                        player.tent += 5
+                        art_taken += 1
+                        discarded.append("art")
+                        art += -1
+                    else:
+                        player.tent += 10
+                        art_taken += 1
+                        discarded.append("art")
+                        art += -1
+
+    print(harald.backpack, "harald backpack4")
+
+    #distributing gems to players leaving on this turn
+    if num_leaving > 0:
+        for player in player_list:
+            if player.leaving == True:
+                player.tent += gems//num_leaving
+                player.leaving = False
+        gems = gems%num_leaving
+        num_leaving = 0
+
+    print(harald.backpack, "harald backpack5")
+
+    for player in player_list:
+        if player.playon(turn) == True:
+            print(player.name, "playon", player.backpack)
+        else:
+            print(player.name, "leave", player.backpack)
+
+    print(harald.backpack, "harald backpack6")"""
+
+
+
+
+
+
+
 
 """blah.shuffle()
 
