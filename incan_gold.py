@@ -2,16 +2,16 @@ import time
 import random
 
 class Player:
-    def __init__(self, name, strat):
+    def __init__(self, name, strat_):
         self.name = name
         self.backpack = 0
         self.tent = 0
-        self.artifacts = Cards([])
+        self.artifacts = 0
         self.explore = True
         self.leaving = False
-        self.strat = strat
+        self.strat = strat_
 
-    def playon(self, turn):
+    def leave(self, turn):
         return self.strat(turn, self.backpack)
 
 class Cards:
@@ -50,18 +50,16 @@ class Cards:
             self.counts[cardname] -= 1
             destination.add(cardname)
 
+    def move_specific(self, destination, cardname):
+        self.cardlist.remove(cardname)
+        self.counts[cardname] -= 1
+        destination.add(cardname)
+
 # deal top card of deck to table
 # take hazard card from table and discard it
 # take all artifacts on table and give them to a player
 # take artifact from reserve to the deck
 # return all cards from table to deck during bust
-
-
-
-
-
-
-
 
 # Phases of the game:
 # Set up the deck, the players and the starting scores.
@@ -78,9 +76,6 @@ class Cards:
 # Repeat game to get average winner.
 
 
-
-
-
 def sim(games, players):
 
     def busted(table):
@@ -91,73 +86,127 @@ def sim(games, players):
                 return True
 
     for game in range(1, games+1):
-        deck = Cards(["artifact", "fire", "fire", "fire", "mummy", "mummy", "mummy", "rocks", "rocks", "rocks", "snake", "snake", "snake", "spiders", "spiders", "spiders", 1, 2, 3, 4, 5, 5, 7, 7, 9, 11, 11, 13, 14, 15, 17])
+        deck = Cards(["fire", "fire", "fire", "mummy", "mummy", "mummy", "rocks", "rocks", "rocks", "snake", "snake", "snake", "spiders", "spiders", "spiders", 1, 2, 3, 4, 5, 5, 7, 7, 9, 11, 11, 13, 14, 15, 17])
         table = Cards([])
         discard = Cards([])
-        reserve = Cards(["artifact", "artifact", "artifact", "artifact"])
-
+        reserve = Cards(["artifact", "artifact", "artifact", "artifact", "artifact"])
 
         for round in range(1, 6):
-            print("round", round)
+            print("\nRound", round)
             turn = 0
             table_gem = 0
 
-            num_players = len(players)
+            num_exploring = len(players)
             for player in players:
                 player.explore = True
 
+            # Prepares deck from previous round.
+            if len(table.cardlist) != 0:
+                table.move_all(deck)
+            reserve.move_top(deck)
             deck.shuffle()
-            #print(deck.cardlist)
-            #print(deck.counts)
-            while num_players > 0:
+            print("reverse order deck", deck.cardlist[::-1])
+            print(deck.counts)
+
+            while num_exploring > 0:
                 turn += 1
+                num_leaving = 0
+                for player in players:
+                    player.leaving = False
                 #print("turn", turn)
                 card = deck.move_top(table)
-                print(card)
+                #print(card, "(", turn, ")")
+
+                # Check if busted by hazards. End the exploring players, discard a hazard.
                 if busted(table):
-                    print("busted")
-                    print("table", table.cardlist)
-                    #print("num players", num_players)
+                    print("busted table", table.cardlist)
+                    #print("num players", num_exploring)
                     for player in players:
                         if player.explore:
+                            print("busted", player.name, "backpack:", player.backpack, "tent:", player.tent)
                             player.explore = False
-                            num_players -= 1
+                            num_exploring -= 1
                             player.backpack = 0
-                    #print("num players", num_players)
-                    print("table gems", table_gem)
+                    #print("num players", num_exploring)
+                    #print("table gems", table_gem)
                     #print("table", table.cardlist)
                     #print("discard", discard.cardlist)
                     table.move_top(discard)
                     table_gem = 0
-                    print("table gems", table_gem)
+                    #print("table gems", table_gem)
                     #print("table", table.cardlist)
                     print("discard", discard.cardlist)
                 else:
+                    # Distribute gems to players who are exploring.
                     if isinstance(card, int):
+                        print("card", card, "num exploring", num_exploring)
                         for player in players:
                             if player.explore:
-                                player.backpack += card//num_players
+                                print(player.name, "backpack {} + {}".format(player.backpack, card//num_exploring))
+                                player.backpack += card//num_exploring
                                 print(player.name, player.backpack)
-                        table_gem += card%num_players
+                        print("table gem {} + {}".format(table_gem, card%num_exploring))
+                        table_gem += card%num_exploring
                         print("table gem", table_gem)
+                    else:
+                        print(card)
+
+                    # Allow exploring players to decide if they keep exploring.
+                    for player in players:
+                        if player.explore:
+                            if player.leave(turn):
+                                player.explore = False
+                                num_exploring -= 1
+                                player.leaving = True
+                                num_leaving += 1
+                                print("leave", player.name, "backpack:", player.backpack, "tent", player.tent)
+                                player.tent += player.backpack
+                                player.backpack = 0
+
+                    # Distribute table gems to players who are leaving.
+                    if num_leaving >= 1:
+                        print("table gem", table_gem, "num leaving", num_leaving)
+                        for player in players:
+                            if player.leaving:
+                                print(player.name, "tent {} + {}".format(player.tent, table_gem//num_leaving))
+                                player.tent += table_gem//num_leaving
+                                print(player.name, "tent", player.tent)
+                        table_gem = table_gem%num_leaving
+                        print("new table gem", table_gem)
+
+                    # Distribute artifacts if just one player is leaving. 5 points for first 3 artifacts, 10 points for the rest.
+                    table.counts.setdefault("artifact", 0)
+                    discard.counts.setdefault("artifact", 0)
+                    if table.counts["artifact"] >= 1 and num_leaving == 1:
+                        for player in players:
+                            if player.leaving:
+                                while table.counts["artifact"] != 0:
+                                    if discard.counts["artifact"] < 3:
+                                        print("{} takes artifact. Tent {} + 5".format(player.name, player.tent))
+                                        table.move_specific(discard, "artifact")
+                                        player.artifacts += 1
+                                        player.tent += 5
+                                        print("{} tent {}, artifacts {}".format(player.name, player.tent, player.artifacts))
+                                        print(discard.cardlist)
+
+                                    else:
+                                        print("{} takes artifact. Tent {} + 10".format(player.name, player.tent))
+                                        table.move_specific(discard, "artifact")
+                                        player.artifacts += 1
+                                        player.tent += 10
+                                        print("{} tent {}, artifacts {}".format(player.name, player.tent, player.artifacts))
+                                        print(discard.cardlist)
+                                break
 
 
-            # For rounds 1 to 4, an artifact is added to the deck.
-            # Also, the table is returned to the deck.
-            if round <= 4:
-                table.move_all(deck)
-                reserve.move_top(deck)
-                #print(table.cardlist)
-                #print(reserve.cardlist)
 
+def leave_turn(turn, backpack):
+    return turn >= 6
 
-def strat_turn(turn, backpack):
-    return turn >= 3
+def leave_backpack(turn, backpack):
+    return backpack >= 8
 
-def strat_backpack(turn, backpack):
-    return backpack >= 5
-
-players = [Player("Ethan", strat_turn), Player("Harald", strat_backpack)]
+players = [Player("Ethan1", leave_turn), Player("Harald", leave_backpack)]
 
 sim(1, players)
 
