@@ -1,4 +1,5 @@
 import time
+time.clock()
 import random
 
 class Player:
@@ -7,9 +8,12 @@ class Player:
         self.backpack = 0
         self.tent = 0
         self.artifacts = 0
-        self.explore = True
+        self.exploring = True
         self.leaving = False
         self.strat = strat_
+        self.log = []
+        self.wins = 0
+        self.draws = 0
 
     def leave(self, turn):
         return self.strat(turn, self.backpack)
@@ -75,8 +79,210 @@ class Cards:
 # Determine winner and put score in log.
 # Repeat game to get average winner.
 
+class Simulator:
+    def __init__(self):
+        pass
 
-def sim(games, players):
+    def init_game_cards(self):
+        self.deck = Cards(["fire", "fire", "fire", "mummy", "mummy", "mummy", "rocks", "rocks", "rocks", "snake", "snake", "snake", "spiders", "spiders", "spiders", 1, 2, 3, 4, 5, 5, 7, 7, 9, 11, 11, 13, 14, 15, 17])
+        self.table = Cards([])
+        self.discard = Cards([])
+        self.reserve = Cards(["artifact", "artifact", "artifact", "artifact", "artifact"])
+
+    def init_player_tent(self):
+        for player in self.players:
+            player.tent = 0
+
+    def init_player_exploring(self):
+        self.num_exploring = len(self.players)
+        for player in self.players:
+            player.exploring = True
+
+    def init_round_cards(self):
+        if len(self.table.cardlist) != 0:
+            self.table.move_all(self.deck)
+        self.reserve.move_top(self.deck)
+        self.deck.shuffle()
+        print("reverse order deck", self.deck.cardlist[::-1])
+        print(self.deck.counts)
+
+    def init_player_leaving(self):
+        self.num_leaving = 0
+        for player in self.players:
+            player.leaving = False
+
+    def check_bust(self):
+        hazards = ["fire", "mummy", "rocks", "snake", "spiders"]
+        for hazard in hazards:
+            self.table.counts.setdefault(hazard, 0)
+            if self.table.counts[hazard] == 2:
+                return True
+
+    def busted(self):
+        print("busted table", self.table.cardlist)
+        for player in self.players:
+            if player.exploring:
+                print("busted", player.name, "backpack:", player.backpack, "tent:", player.tent)
+                player.exploring = False
+                self.num_exploring -= 1
+                player.backpack = 0
+        self.table.move_top(self.discard)
+        self.table_gem = 0
+        print("discard", self.discard.cardlist)
+
+    def distribute_gems(self):
+        if isinstance(self.card, int):
+            print("----", self.card, "num exploring", self.num_exploring)
+            for player in self.players:
+                if player.exploring:
+                    print(player.name, "backpack {} + {}".format(player.backpack, self.card//self.num_exploring))
+                    player.backpack += self.card//self.num_exploring
+                    print(player.name, player.backpack)
+            print("table gem {} + {}".format(self.table_gem, self.card%self.num_exploring))
+            self.table_gem += self.card%self.num_exploring
+            print("table gem", self.table_gem)
+        else:
+            print("----", self.card)
+
+    def decide_player(self):
+        for player in self.players:
+            if player.exploring:
+                if player.leave(self.turn):
+                    player.exploring = False
+                    self.num_exploring -= 1
+                    player.leaving = True
+                    self.num_leaving += 1
+                    print("leave", player.name, "backpack:", player.backpack, "tent", player.tent)
+                    player.tent += player.backpack
+                    player.backpack = 0
+
+    def leaving_gems(self):
+        if self.num_leaving >= 1:
+            print("table gem", self.table_gem, "num leaving", self.num_leaving)
+            for player in self.players:
+                if player.leaving:
+                    print(player.name, "tent {} + {}".format(player.tent, self.table_gem//self.num_leaving))
+                    player.tent += self.table_gem//self.num_leaving
+                    print(player.name, "tent", player.tent)
+            self.table_gem = self.table_gem%self.num_leaving
+            print("new table gem", self.table_gem)
+
+    def leaving_artifacts(self):
+        self.table.counts.setdefault("artifact", 0)
+        self.discard.counts.setdefault("artifact", 0)
+        if self.table.counts["artifact"] >= 1 and self.num_leaving == 1:
+            for player in self.players:
+                if player.leaving:
+                    while self.table.counts["artifact"] != 0:
+                        if self.discard.counts["artifact"] < 3:
+                            print("{} takes artifact. Tent {} + 5".format(player.name, player.tent))
+                            self.table.move_specific(self.discard, "artifact")
+                            player.artifacts += 1
+                            player.tent += 5
+                            print("{} tent {}, artifacts {}".format(player.name, player.tent, player.artifacts))
+                            print(self.discard.cardlist)
+
+                        else:
+                            print("{} takes artifact. Tent {} + 10".format(player.name, player.tent))
+                            self.table.move_specific(self.discard, "artifact")
+                            player.artifacts += 1
+                            player.tent += 10
+                            print("{} tent {}, artifacts {}".format(player.name, player.tent, player.artifacts))
+                            print(self.discard.cardlist)
+                    break
+
+    def log_scores(self):
+        self.max_tent = 0
+        self.max_player = []
+        print("End Game")
+        for player in self.players:
+            print(player.name, player.tent)
+            player.log.append(player.tent)
+            if player.tent > self.max_tent:
+                self.max_tent = player.tent
+                self.max_player = [player]
+            elif player.tent == self.max_tent:
+                self.max_player.append(player)
+        if len(self.max_player) == 1:
+            self.max_player[0].wins += 1
+        else:
+            for player in self.max_player:
+                player.draws += 1
+        print("max tent", self.max_tent)
+        print("max player", [player.name for player in self.max_player])
+        for player in self.players:
+            print("{} average {} wins {} draws {}".format(player.name, sum(player.log)/len(player.log), player.wins, player.draws))
+
+    def run_round(self):
+        self.turn = 0
+        self.table_gem = 0
+
+        self.init_player_exploring()
+        self.init_round_cards()
+        while self.num_exploring > 0:
+            self.turn += 1
+            self.init_player_leaving()
+
+            self.card = self.deck.move_top(self.table)
+
+            if self.check_bust():
+                self.busted()
+            else:
+                self.distribute_gems()
+                self.decide_player()
+                self.leaving_gems()
+                self.leaving_artifacts()
+
+    def sim(self, games, players):
+        self.games = games
+        self.players = players
+
+        for game in range(1, self.games+1):
+            print("Start Game", game)
+            self.init_game_cards()
+            self.init_player_tent()
+            for round in range(1, 6):
+                print("Round", round)
+                self.run_round()
+            self.log_scores()
+
+
+ethan_wins = []
+harald_wins = []
+ethan_ave = []
+harald_ave = []
+
+for x in range(1, 20):
+    def leave_turn1(turn, backpack):
+        return turn >= x
+
+    def leave_turn2(turn, backpack):
+        return turn >= x+1
+
+    def leave_backpack(turn, backpack):
+        return backpack >= 15
+
+    ethan = Player("Ethan", leave_turn1)
+    harald = Player("Harald", leave_turn2)
+
+    players = [ethan, harald]
+
+    incan = Simulator()
+    incan.sim(1000, players)
+
+    ethan_wins.append(ethan.wins)
+    harald_wins.append(harald.wins)
+    ethan_ave.append(sum(ethan.log)/len(ethan.log))
+    harald_ave.append(sum(harald.log)/len(harald.log))
+
+print("ethan wins ", ethan_wins)
+print("harald wins", harald_wins)
+print("ethan ave ", ethan_ave)
+print("harald ave", harald_ave)
+
+print("time", time.clock())
+
+"""def sim(games, players):
 
     def busted(table):
         hazards = ["fire", "mummy", "rocks", "snake", "spiders"]
@@ -98,7 +304,7 @@ def sim(games, players):
 
             num_exploring = len(players)
             for player in players:
-                player.explore = True
+                player.exploring = True
 
             # Prepares deck from previous round.
             if len(table.cardlist) != 0:
@@ -122,9 +328,9 @@ def sim(games, players):
                     print("busted table", table.cardlist)
                     #print("num players", num_exploring)
                     for player in players:
-                        if player.explore:
+                        if player.exploring:
                             print("busted", player.name, "backpack:", player.backpack, "tent:", player.tent)
-                            player.explore = False
+                            player.exploring = False
                             num_exploring -= 1
                             player.backpack = 0
                     #print("num players", num_exploring)
@@ -141,7 +347,7 @@ def sim(games, players):
                     if isinstance(card, int):
                         print("card", card, "num exploring", num_exploring)
                         for player in players:
-                            if player.explore:
+                            if player.exploring:
                                 print(player.name, "backpack {} + {}".format(player.backpack, card//num_exploring))
                                 player.backpack += card//num_exploring
                                 print(player.name, player.backpack)
@@ -153,9 +359,9 @@ def sim(games, players):
 
                     # Allow exploring players to decide if they keep exploring.
                     for player in players:
-                        if player.explore:
+                        if player.exploring:
                             if player.leave(turn):
-                                player.explore = False
+                                player.exploring = False
                                 num_exploring -= 1
                                 player.leaving = True
                                 num_leaving += 1
@@ -196,19 +402,10 @@ def sim(games, players):
                                         player.tent += 10
                                         print("{} tent {}, artifacts {}".format(player.name, player.tent, player.artifacts))
                                         print(discard.cardlist)
-                                break
+                                break"""
 
 
 
-def leave_turn(turn, backpack):
-    return turn >= 6
-
-def leave_backpack(turn, backpack):
-    return backpack >= 8
-
-players = [Player("Ethan1", leave_turn), Player("Harald", leave_backpack)]
-
-sim(1, players)
 
 
 
@@ -630,3 +827,29 @@ def game(player_list):
 game(player_list)
 
 """
+
+"""class Game:
+
+    def __init__(self, players):
+        self.deck = Cards(["fire", "fire", "fire", "mummy", "mummy", "mummy", "rocks", "rocks", "rocks", "snake", "snake", "snake", "spiders", "spiders", "spiders", 1, 2, 3, 4, 5, 5, 7, 7, 9, 11, 11, 13, 14, 15, 17])
+        self.table = Cards([])
+        self.discard = Cards([])
+        self.reserve = Cards(["artifact", "artifact", "artifact", "artifact", "artifact"])
+        self.round = 0
+        self.MAX_ROUNDS = 5
+        self.num_players = len(players)
+        self.players = players
+
+    def initialise_players(self):
+        for player in self.players:
+            player.explore = True
+
+    def play_round(self):
+        self.round += 1
+        if self.round > self.MAX_ROUNDS:
+            #dont play any more, finsih up the game
+        print("\nRound {}".format(self.round))
+        self.turn = 0
+        self.table_gem = 0
+        self.initialise_players()"""
+
