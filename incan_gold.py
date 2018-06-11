@@ -245,40 +245,57 @@ class Simulator:
                 self.run_round()
             self.log_scores()
 
+def leave_turn1(turn, backpack):
+    return turn >= x
+
+def leave_turn2(turn, backpack):
+    return turn >= y
+
+def leave_backpack(turn, backpack):
+    return backpack >= 15
 
 ethan_wins = []
 harald_wins = []
 ethan_ave = []
 harald_ave = []
 
-def leave_turn1(turn, backpack):
-    return turn >= x
+x_max = 20
+y_max = 20
 
-def leave_turn2(turn, backpack):
-    return turn >= x+4
+for y in range(1, y_max+1):
+    ethan_wins.append([])
+    harald_wins.append([])
+    ethan_ave.append([])
+    harald_ave.append([])
 
-def leave_backpack(turn, backpack):
-    return backpack >= 15
+    for x in range(1, x_max+1):
+        ethan = Player("Ethan", leave_turn1)
+        harald = Player("Harald", leave_turn2)
 
-for x in range(6, 7):
+        players = [ethan, harald]
 
+        incan = Simulator()
+        incan.sim(10, players)
 
-    ethan = Player("Ethan", leave_turn1)
-    harald = Player("Harald", leave_turn2)
+        ethan_wins[y-1].append(ethan.wins)
+        harald_wins[y-1].append(harald.wins)
+        ethan_ave[y-1].append(sum(ethan.log)/len(ethan.log))
+        harald_ave[y-1].append(sum(harald.log)/len(harald.log))
 
-    players = [ethan, harald]
+print("\nethan wins")
+for y in range(1, y_max+1):
+    print(ethan_wins[y-1])
 
-    incan = Simulator()
-    incan.sim(2, players)
+print("\nharald wins")
+for y in range(1, y_max+1):
+    print(harald_wins[y-1])
 
-    ethan_wins.append(ethan.wins)
-    harald_wins.append(harald.wins)
-    ethan_ave.append(sum(ethan.log)/len(ethan.log))
-    harald_ave.append(sum(harald.log)/len(harald.log))
+print("\nethan ave")
+for y in range(1, y_max+1):
+    print(ethan_ave[y-1])
 
-print("ethan wins ", ethan_wins)
-print("harald wins", harald_wins)
-print("ethan ave ", ethan_ave)
-print("harald ave", harald_ave)
+print("\nharald ave")
+for y in range(1, y_max+1):
+    print(harald_ave[y-1])
 
 print("time", time.clock())
