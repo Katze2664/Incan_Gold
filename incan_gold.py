@@ -131,6 +131,14 @@ class Simulator:
             print("table gem {} + {} = {} turn {}".format(self.table_gem, self.card%self.num_exploring, self.table_gem + self.card%self.num_exploring, self.turn))
             self.table_gem += self.card%self.num_exploring
             #p-rint("table gem", self.table_gem)
+            
+        elif self.card == "artifact":
+            print(self.card, "turn", self.turn)
+            if self.table.counts["artifact"] + self.discard.counts["artifact"] <= 3:
+                self.table_art += 5
+            else:
+                self.table_art += 10
+                 
         else:
             print(self.card, "turn", self.turn)
             pass
@@ -255,22 +263,19 @@ class Simulator:
 
     def expected_table_gem(self, list_prob_leave):
         num_leave = self.prob_num_leave(list_prob_leave)
-        table_gem_ind = []
-        exp_table_gem = []
         result = 0
-        result2 = 0
         for i in range(len(num_leave)):
-            table_gem_ind.append(self.table_gem//(i+1))
-            exp_table_gem.append(num_leave[i]*table_gem_ind[i])
-            result += exp_table_gem[i]
-            result2 += num_leave[i]*(self.table_gem//(i+1))
-        return table_gem_ind, exp_table_gem, result, result2
-            
-    
+            result += num_leave[i]*(self.table_gem//(i+1))
+        return result
+
+    def expected_artifact(self, list_prob_leave):
+        num_leave = self.prob_num_leave(list_prob_leave)
+        return num_leave[0]*self.table_art
 
     def run_round(self):
         self.turn = 0
         self.table_gem = 0
+        self.table_art = 0
 
         self.init_player_exploring()
         self.init_round_cards()
@@ -288,6 +293,7 @@ class Simulator:
                 print(self.next_card_value())
                 print(self.prob_num_leave([0.5, 0.5]))
                 print(self.expected_table_gem([0.5, 0.5]))
+                print(self.expected_artifact([0.5, 0.5]))
                 self.decide_player()
                 self.leaving_gems()
                 self.leaving_artifacts()
