@@ -253,6 +253,21 @@ class Simulator:
             result[num_leave] += prob_leave
         return result
 
+    def expected_table_gem(self, list_prob_leave):
+        num_leave = self.prob_num_leave(list_prob_leave)
+        table_gem_ind = []
+        exp_table_gem = []
+        result = 0
+        result2 = 0
+        for i in range(len(num_leave)):
+            table_gem_ind.append(self.table_gem//(i+1))
+            exp_table_gem.append(num_leave[i]*table_gem_ind[i])
+            result += exp_table_gem[i]
+            result2 += num_leave[i]*(self.table_gem//(i+1))
+        return table_gem_ind, exp_table_gem, result, result2
+            
+    
+
     def run_round(self):
         self.turn = 0
         self.table_gem = 0
@@ -272,6 +287,7 @@ class Simulator:
                 print(self.chance_bust())
                 print(self.next_card_value())
                 print(self.prob_num_leave([0.5, 0.5]))
+                print(self.expected_table_gem([0.5, 0.5]))
                 self.decide_player()
                 self.leaving_gems()
                 self.leaving_artifacts()
