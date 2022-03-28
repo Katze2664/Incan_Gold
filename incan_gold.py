@@ -1,5 +1,5 @@
 import time
-time.clock()
+# time.clock()
 import random
 
 class Player:
@@ -406,4 +406,4 @@ print("\nharald ave")
 for y in range(1, y_max+1):
     print(harald_ave[y-1])"""
 
-print("time", time.clock())
+# print("time", time.clock())
