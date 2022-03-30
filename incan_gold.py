@@ -1,20 +1,21 @@
 import time
-# time.clock()
+time.perf_counter()
 import random
+random.seed(1)
 
 class Player:
-    def __init__(self, name, strat_):
+    def __init__(self, name, strat):
         self.name = name
         self.backpack = 0
-        self.backpack_leavegem = 0
-        self.backpack_leaveart = 0
+        self.backpack_leave_gem = 0
+        self.backpack_leave_art = 0
         self.tent = 0
-        self.tent_leavegem = 0
-        self.tent_leaveart = 0
+        self.tent_leave_gem = 0
+        self.tent_leave_art = 0
         self.artifacts = 0
         self.exploring = True
         self.leaving = False
-        self.strat = strat_
+        self.strat = strat
         self.log = []
         self.wins = 0
         self.draws = 0
@@ -23,52 +24,57 @@ class Player:
         return self.strat(turn, self.backpack)
 
 class Cards:
-    def __init__(self, cardlist):
+    def __init__(self, card_list):
 
-        self.cardlist = cardlist
+        self.card_list = card_list
         self.counts = {}
-        for card in self.cardlist:
+        for card in self.card_list:
             self.counts.setdefault(card, 0)
             self.counts[card] += 1
 
     def add(self, card):
-        self.cardlist.append(card)
+        self.card_list.append(card)
         self.counts.setdefault(card, 0)
         self.counts[card] += 1
 
     def shuffle(self):
-        random.shuffle(self.cardlist)
+        random.shuffle(self.card_list)
 
     def move_top(self, destination):
-        card = self.cardlist.pop()
+        card = self.card_list.pop()
         self.counts[card] -= 1
         destination.add(card)
         return card
 
     def move_all(self, destination):
-        while len(self.cardlist) != 0:
-            card = self.cardlist.pop()
+        while len(self.card_list) != 0:
+            card = self.card_list.pop()
             self.counts[card] -= 1
             destination.add(card)
 
-    def move_allspecific(self, destination, cardname):
-        self.counts.setdefault(cardname, 0)
-        while self.counts[cardname] != 0:
-            self.cardlist.remove(cardname)
-            self.counts[cardname] -= 1
-            destination.add(cardname)
+    def move_all_specific(self, destination, card_name):
+        self.counts.setdefault(card_name, 0)
+        while self.counts[card_name] != 0:
+            self.card_list.remove(card_name)
+            self.counts[card_name] -= 1
+            destination.add(card_name)
 
-    def move_specific(self, destination, cardname):
-        self.cardlist.remove(cardname)
-        self.counts[cardname] -= 1
-        destination.add(cardname)
+    def move_specific(self, destination, card_name):
+        self.card_list.remove(card_name)
+        self.counts[card_name] -= 1
+        destination.add(card_name)
 
 class Simulator:
     def __init__(self):
         pass
 
     def init_game_cards(self):
-        self.deck = Cards(["fire", "fire", "fire", "mummy", "mummy", "mummy", "rocks", "rocks", "rocks", "snake", "snake", "snake", "spiders", "spiders", "spiders", 1, 2, 3, 4, 5, 5, 7, 7, 9, 11, 11, 13, 14, 15, 17])
+        self.deck = Cards(["fire", "fire", "fire",
+                           "mummy", "mummy", "mummy",
+                           "rocks", "rocks", "rocks",
+                           "snake", "snake", "snake",
+                           "spiders", "spiders", "spiders",
+                           1, 2, 3, 4, 5, 5, 7, 7, 9, 11, 11, 13, 14, 15, 17])
         self.table = Cards([])
         self.discard = Cards([])
         self.reserve = Cards(["artifact", "artifact", "artifact", "artifact", "artifact"])
@@ -83,11 +89,11 @@ class Simulator:
             player.exploring = True
 
     def init_round_cards(self):
-        if len(self.table.cardlist) != 0:
+        if len(self.table.card_list) != 0:
             self.table.move_all(self.deck)
         self.reserve.move_top(self.deck)
         self.deck.shuffle()
-        print("reverse order deck", self.deck.cardlist[::-1])
+        print("reverse order deck", self.deck.card_list[::-1])
         #p-rint(self.deck.counts)
 
     def init_player_leaving(self):
@@ -103,7 +109,7 @@ class Simulator:
                 return True
 
     def busted(self):
-        print("busted table", self.table.cardlist)
+        print("busted table", self.table.card_list)
         for player in self.players:
             if player.exploring:
                 print("busted", player.name, "backpack:", player.backpack, "tent:", player.tent)
@@ -112,24 +118,24 @@ class Simulator:
                 player.backpack = 0
         self.table.move_top(self.discard)
         self.table_gem = 0
-        print("discard", self.discard.cardlist)
+        print("discard", self.discard.card_list)
 
     def distribute_gems(self):
         if isinstance(self.card, int):
             #p-rint("----", self.card, "num exploring", self.num_exploring)
-            counter = 0
+            counter = 0  # counter is only required for printing the first player's backpack, not required for game mechanics
             for player in self.players:
                 if player.exploring:
                     if counter == 0:
-                        print(self.card, "backpack {} + {} = {}".format(player.backpack, self.card//self.num_exploring, player.backpack + self.card//self.num_exploring), end=" ")
+                        print(self.card, f"backpack {player.backpack} + {self.card // self.num_exploring} = {player.backpack + self.card // self.num_exploring}", end=" ")
                         pass
                     counter += 1
                     print(player.name, end=" ")
-                    #p-rint(player.name, "backpack {} + {} = {}".format(player.backpack, self.card//self.num_exploring, player.backpack + self.card//self.num_exploring))
-                    player.backpack += self.card//self.num_exploring
+                    #p-rint(player.name, "backpack {} + {} = {}".format(player.backpack, self.card // self.num_exploring, player.backpack + self.card // self.num_exploring))
+                    player.backpack += self.card // self.num_exploring
                     #p-rint(player.name, player.backpack)
-            print("table gem {} + {} = {} turn {}".format(self.table_gem, self.card%self.num_exploring, self.table_gem + self.card%self.num_exploring, self.turn))
-            self.table_gem += self.card%self.num_exploring
+            print(f"table gem {self.table_gem} + {self.card % self.num_exploring} = {self.table_gem + self.card % self.num_exploring} turn {self.turn}")
+            self.table_gem += self.card % self.num_exploring
             #p-rint("table gem", self.table_gem)
             
         elif self.card == "artifact":
@@ -147,7 +153,7 @@ class Simulator:
         for player in self.players:
             if player.exploring:
                 if player.leave(self.turn):
-                    print("table", self.table.cardlist)
+                    print("table", self.table.card_list)
                     player.exploring = False
                     self.num_exploring -= 1
                     player.leaving = True
@@ -158,10 +164,10 @@ class Simulator:
             #p-rint("table gem", self.table_gem, "num leaving", self.num_leaving)
             for player in self.players:
                 if player.leaving:
-                    #p-rint(player.name, "tent {} + {}".format(player.tent, self.table_gem//self.num_leaving))
-                    player.backpack_leavegem = self.table_gem//self.num_leaving
+                    #p-rint(player.name, "tent {} + {}".format(player.tent, self.table_gem // self.num_leaving))
+                    player.backpack_leave_gem = self.table_gem // self.num_leaving
                     #p-rint(player.name, "tent", player.tent)
-            self.table_gem = self.table_gem%self.num_leaving
+            self.table_gem = self.table_gem % self.num_leaving
             #p-rint("new table gem", self.table_gem)
 
     def leaving_artifacts(self):
@@ -175,27 +181,27 @@ class Simulator:
                             #p-rint("{} takes artifact. Tent {} + 5".format(player.name, player.tent))
                             self.table.move_specific(self.discard, "artifact")
                             player.artifacts += 1
-                            player.backpack_leaveart += 5
+                            player.backpack_leave_art += 5
                             #p-rint("{} tent {}, artifacts {}".format(player.name, player.tent, player.artifacts))
-                            print("discard", self.discard.cardlist)
+                            print("discard", self.discard.card_list)
 
                         else:
                             #p-rint("{} takes artifact. Tent {} + 10".format(player.name, player.tent))
                             self.table.move_specific(self.discard, "artifact")
                             player.artifacts += 1
-                            player.backpack_leaveart += 10
+                            player.backpack_leave_art += 10
                             #p-rint("{} tent {}, artifacts {}".format(player.name, player.tent, player.artifacts))
-                            print("discard", self.discard.cardlist)
+                            print("discard", self.discard.card_list)
                     break
 
     def store_backpack(self):
         for player in self.players:
             if player.leaving:
-                print("leaving {} {} + {} + {} = {}".format(player.name, player.backpack, player.backpack_leavegem, player.backpack_leaveart, player.backpack + player.backpack_leavegem + player.backpack_leaveart))
-                player.backpack += player.backpack_leavegem + player.backpack_leaveart
-                player.backpack_leavegem = 0
-                player.backpack_leaveart = 0
-                print("leaving {} {} + {} = {}".format(player.name, player.tent, player.backpack, player.tent + player.backpack))
+                print(f"leaving {player.name} {player.backpack} + {player.backpack_leave_gem} + {player.backpack_leave_art} = {player.backpack + player.backpack_leave_gem + player.backpack_leave_art}")
+                player.backpack += player.backpack_leave_gem + player.backpack_leave_art
+                player.backpack_leave_gem = 0
+                player.backpack_leave_art = 0
+                print(f"leaving {player.name} {player.tent} + {player.backpack} = {player.tent + player.backpack}")
                 player.tent += player.backpack
                 player.backpack = 0
 
@@ -219,7 +225,7 @@ class Simulator:
         print("max tent", self.max_tent)
         print("max player", [player.name for player in self.max_player])
         for player in self.players:
-            print("{} average {} wins {} draws {}".format(player.name, sum(player.log)/len(player.log), player.wins, player.draws))
+            print(f"{player.name} average {sum(player.log) / len(player.log)} wins {player.wins} draws {player.draws}")
             pass
 
     def chance_bust(self):
@@ -230,7 +236,7 @@ class Simulator:
             if self.table.counts[hazard] == 1:
                 self.deck.counts.setdefault(hazard, 0)
                 bust_cards += self.deck.counts[hazard]
-        return bust_cards, len(self.deck.cardlist), bust_cards/len(self.deck.cardlist)
+        return bust_cards, len(self.deck.card_list), bust_cards / len(self.deck.card_list)
 
     def next_card_value(self):
         gem_total = 0
@@ -239,7 +245,7 @@ class Simulator:
         for gem in gems:
             self.deck.counts.setdefault(gem, 0)
             gem_total += self.deck.counts[gem]*gem
-            gem_ind += self.deck.counts[gem]*(gem//self.num_exploring)
+            gem_ind += self.deck.counts[gem]*(gem // self.num_exploring)
         return gem_total, gem_ind
 
     def prob_num_leave(self, list_prob_leave):
@@ -265,7 +271,7 @@ class Simulator:
         num_leave = self.prob_num_leave(list_prob_leave)
         result = 0
         for i in range(len(num_leave)):
-            result += num_leave[i]*(self.table_gem//(i+1))
+            result += num_leave[i]*(self.table_gem // (i+1))
         return result
 
     def expected_artifact(self, list_prob_leave):
@@ -406,4 +412,4 @@ print("\nharald ave")
 for y in range(1, y_max+1):
     print(harald_ave[y-1])"""
 
-# print("time", time.clock())
+print("time", time.perf_counter())
