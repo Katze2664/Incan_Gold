@@ -1,5 +1,4 @@
 import random
-random.seed(1)
 
 class Player:
     def __init__(self, name, strat):
@@ -64,9 +63,10 @@ class Cards:
         destination.add(card_name)
 
 class Simulator:
-    def __init__(self, verbose=0, manual=False):
+    def __init__(self, verbose=0, manual=False, seed=None):
         self.verbose = verbose
         self.manual = manual
+        random.seed(seed)
 
     def init_game_cards(self):
         self.deck = Cards(["fire", "fire", "fire",
@@ -319,6 +319,11 @@ class Simulator:
     def sim(self, games, players):
         self.games = games
         self.players = players
+        for player in self.players:
+            player.log = []
+            player.wins = 0
+            player.draws = 0
+            player.losses = 0
 
         for game in range(1, self.games+1):
             self.game = game
@@ -350,4 +355,4 @@ class Simulator:
                       f"Wins: {player.wins} = {round(100 * player.wins / n, 1)}%\n"
                       f"Draws: {player.draws} = {round(100 * player.draws / n, 1)}%\n"
                       f"Losses: {player.losses} = {round(100 * player.losses / n, 1)}%\n"
-                      f"Average score: {sum(player.log) / n}")
+                      f"Average score: {round(sum(player.log) / n, 1)}")

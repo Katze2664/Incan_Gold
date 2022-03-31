@@ -24,8 +24,9 @@ ian = Player("Ian", leave_turn_4)
 
 players = [ethan, harald, ian]
 
-incan = Simulator(verbose=2, manual=False)
+incan = Simulator(verbose=1, manual=False, seed=1)
 incan.sim(5, players)
-
+incan.sim(5, players)
+incan.sim(5, players)
 
 print("time", time.perf_counter())
