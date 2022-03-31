@@ -1,11 +1,15 @@
 from incan_gold import Player
 from incan_gold import Simulator
 
-def leave_turn1(turn, backpack):
-    return turn >= 6
+def make_turn_strat(max_turns):
+    def turn_strat(turn, backpack):
+        return turn >= max_turns
+    return turn_strat
 
-def leave_turn2(turn, backpack):
-    return turn >= 10
+def make_backpack_strat(max_backpack):
+    def backpack_strat(turn, backpack):
+        return backpack >= max_backpack
+    return backpack_strat
 
 ethan_wins = []
 harald_wins = []
@@ -15,21 +19,22 @@ harald_ave = []
 x_max = 20
 y_max = 20
 
+
 for y in range(1, y_max+1):
+    leave_turn_y = make_turn_strat(y)
+
     ethan_wins.append([])
     harald_wins.append([])
     ethan_ave.append([])
     harald_ave.append([])
 
     for x in range(1, x_max+1):
-        ethan = Player("Ethan", leave_turn1)
-        harald = Player("Harald", leave_turn2)
+        leave_turn_x = make_turn_strat(x)
+
+        ethan = Player("Ethan", leave_turn_y)
+        harald = Player("Harald", leave_turn_x)
 
         players = [ethan, harald]
-
-        if x == 9 and y == 1:
-            print("x == 9, y == 1")
-            pass
 
         incan = Simulator()
         incan.sim(10, players)

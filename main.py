@@ -4,20 +4,23 @@ from incan_gold import Player
 from incan_gold import Simulator
 
 
-def leave_turn1(turn, backpack):
-    return turn >= 6
+def make_turn_strat(max_turns):
+    def turn_strat(turn, backpack):
+        return turn >= max_turns
+    return turn_strat
 
-def leave_turn2(turn, backpack):
-    return turn >= 10
+def make_backpack_strat(max_backpack):
+    def backpack_strat(turn, backpack):
+        return backpack >= max_backpack
+    return backpack_strat
 
-def leave_backpack(turn, backpack):
-    return backpack >= 12
+leave_turn_6 = make_turn_strat(6)
+leave_turn_10 = make_turn_strat(10)
 
-ethan = Player("Ethan", leave_turn1)
-harald = Player("Harald", leave_turn2)
-ian = Player("Ian", leave_backpack)
+ethan = Player("Ethan", leave_turn_6)
+harald = Player("Harald", leave_turn_10)
 
-players = [ethan, harald, ian]
+players = [ethan, harald]
 
 incan = Simulator()
 incan.sim(1, players)
