@@ -22,7 +22,7 @@ harald = Player("Harald", leave_turn_10)
 
 players = [ethan, harald]
 
-incan = Simulator(verbose=4, manual=True)
+incan = Simulator(verbose=4, manual=False)
 incan.sim(1, players)
 
 
