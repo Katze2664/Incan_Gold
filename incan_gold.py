@@ -17,6 +17,7 @@ class Player:
         self.log = []
         self.wins = 0
         self.draws = 0
+        self.losses = 0
 
     def leave(self, turn):
         return self.strat(turn, self.backpack)
@@ -158,8 +159,9 @@ class Simulator:
                 for player in self.players:
                     print(f"{player.name}'s backpack: {player.backpack}")
 
-        print(f"Spare gems: {self.table_gem}")
-        print(f"Spare artifacts: {self.table_art}")
+        if self.verbose >= 5:
+            print(f"Spare gems: {self.table_gem}")
+            print(f"Spare artifacts: {self.table_art}")
 
     def decide_player(self):
         if self.verbose >= 5:
@@ -177,8 +179,11 @@ class Simulator:
                     self.num_exploring -= 1
                     player.leaving = True
                     self.num_leaving += 1
-        if not no_one_has_left:
-            print("")
+        if self.verbose >= 5:
+            if no_one_has_left:
+                print("Everybody continues exploring!")
+            else:
+                print("")
 
     def leaving_gems(self):
         if self.num_leaving >= 1:
@@ -248,14 +253,19 @@ class Simulator:
                 self.max_player = [player]
             elif player.tent == self.max_tent:
                 self.max_player.append(player)
+
         if len(self.max_player) == 1:
             self.max_player[0].wins += 1
         else:
             for player in self.max_player:
                 player.draws += 1
 
+        for player in self.players:
+            if player not in self.max_player:
+                player.losses += 1
+
         if self.verbose >= 2:
-            print(f"Winner(s): {[player.name for player in self.max_player]}")
+            print(f"\nWinner(s): {[player.name for player in self.max_player]}")
             for player in self.players:
                 print(f"{player.name}'s score = {player.tent}")
         # print("max tent", self.max_tent)
@@ -331,3 +341,13 @@ class Simulator:
                 self.run_round()
 
             self.log_scores()
+
+        if self.verbose >= 1:
+            print(f"\nTotal games: {self.games}")
+            for player in self.players:
+                n = len(player.log)
+                print(f"\n{player.name}\n"
+                      f"Wins: {player.wins} = {round(100 * player.wins / n, 1)}%\n"
+                      f"Draws: {player.draws} = {round(100 * player.draws / n, 1)}%\n"
+                      f"Losses: {player.losses} = {round(100 * player.losses / n, 1)}%\n"
+                      f"Average score: {sum(player.log) / n}")

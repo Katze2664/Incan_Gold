@@ -14,16 +14,18 @@ def make_backpack_strat(max_backpack):
         return backpack >= max_backpack
     return backpack_strat
 
+leave_turn_4 = make_turn_strat(4)
 leave_turn_6 = make_turn_strat(6)
 leave_turn_10 = make_turn_strat(10)
 
 ethan = Player("Ethan", leave_turn_6)
 harald = Player("Harald", leave_turn_10)
+ian = Player("Ian", leave_turn_4)
 
-players = [ethan, harald]
+players = [ethan, harald, ian]
 
-incan = Simulator(verbose=4, manual=False)
-incan.sim(1, players)
+incan = Simulator(verbose=2, manual=False)
+incan.sim(5, players)
 
 
 print("time", time.perf_counter())
