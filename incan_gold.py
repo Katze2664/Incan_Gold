@@ -1,5 +1,3 @@
-import time
-time.perf_counter()
 import random
 random.seed(1)
 
@@ -140,6 +138,7 @@ class Simulator:
             
         elif self.card == "artifact":
             print(self.card, "turn", self.turn)
+            self.discard.counts.setdefault("artifact", 0)
             if self.table.counts["artifact"] + self.discard.counts["artifact"] <= 3:
                 self.table_art += 5
             else:
@@ -228,56 +227,6 @@ class Simulator:
             print(f"{player.name} average {sum(player.log) / len(player.log)} wins {player.wins} draws {player.draws}")
             pass
 
-    def chance_bust(self):
-        bust_cards = 0
-        hazards = ["fire", "mummy", "rocks", "snake", "spiders"]
-        for hazard in hazards:
-            self.table.counts.setdefault(hazard, 0)
-            if self.table.counts[hazard] == 1:
-                self.deck.counts.setdefault(hazard, 0)
-                bust_cards += self.deck.counts[hazard]
-        return bust_cards, len(self.deck.card_list), bust_cards / len(self.deck.card_list)
-
-    def next_card_value(self):
-        gem_total = 0
-        gem_ind = 0
-        gems = [1, 2, 3, 4, 5, 7, 9, 11, 13, 14, 15, 17]
-        for gem in gems:
-            self.deck.counts.setdefault(gem, 0)
-            gem_total += self.deck.counts[gem]*gem
-            gem_ind += self.deck.counts[gem]*(gem // self.num_exploring)
-        return gem_total, gem_ind
-
-    def prob_num_leave(self, list_prob_leave):
-        result = [0]
-        list_prob_stay = []
-        for p in list_prob_leave:
-            result.append(0)
-            list_prob_stay.append(1-p)
-
-        for i in range(2**len(list_prob_leave)):
-            num_leave = 0
-            prob_leave = 1
-            for person in range(len(list_prob_leave)):
-                if i & 2**person:
-                    num_leave += 1
-                    prob_leave *= list_prob_leave[person]
-                else:
-                    prob_leave *= list_prob_stay[person]
-            result[num_leave] += prob_leave
-        return result
-
-    def expected_table_gem(self, list_prob_leave):
-        num_leave = self.prob_num_leave(list_prob_leave)
-        result = 0
-        for i in range(len(num_leave)):
-            result += num_leave[i]*(self.table_gem // (i+1))
-        return result
-
-    def expected_artifact(self, list_prob_leave):
-        num_leave = self.prob_num_leave(list_prob_leave)
-        return num_leave[0]*self.table_art
-
     def run_round(self):
         self.turn = 0
         self.table_gem = 0
@@ -295,11 +244,6 @@ class Simulator:
                 self.busted()
             else:
                 self.distribute_gems()
-                print(self.chance_bust())
-                print(self.next_card_value())
-                print(self.prob_num_leave([0.5, 0.5]))
-                print(self.expected_table_gem([0.5, 0.5]))
-                print(self.expected_artifact([0.5, 0.5]))
                 self.decide_player()
                 self.leaving_gems()
                 self.leaving_artifacts()
@@ -317,99 +261,3 @@ class Simulator:
                 print("Round", round)
                 self.run_round()
             self.log_scores()
-
-
-
-
-def leave_turn1(turn, backpack):
-    return turn >= 6
-
-def leave_turn2(turn, backpack):
-    return turn >= 10
-
-def leave_backpack(turn, backpack):
-    return backpack >= 12
-
-ethan = Player("Ethan", leave_turn1)
-harald = Player("Harald", leave_turn2)
-ian = Player("Ian", leave_backpack)
-
-players = [ethan, harald, ian]
-
-incan = Simulator()
-incan.sim(1, players)
-
-"""def prob_num_others_leave(self):
-        result = [0, 0, 0, 0]
-        prob_leave = [0.1, 0.3, 0.4]
-        prob_stay = []
-        for i in prob_leave:
-            prob_stay.append(1-i)
-
-        for i in range(2):
-            if i == 0:
-                prob_i = prob_stay[0]
-            else:
-                prob_i = prob_leave[0]
-
-            for j in range(2):
-                if j == 0:
-                    prob_j = prob_stay[1]
-                else:
-                    prob_j = prob_leave[1]
-
-                for k in range(2):
-                    if k == 0:
-                        prob_k = prob_stay[2]
-                    else:
-                        prob_k = prob_leave[2]
-
-                    num_leave = i+j+k
-                    result[num_leave] += prob_i*prob_j*prob_k
-        return result"""
-
-"""ethan_wins = []
-harald_wins = []
-ethan_ave = []
-harald_ave = []
-
-x_max = 20
-y_max = 20
-
-for y in range(1, y_max+1):
-    ethan_wins.append([])
-    harald_wins.append([])
-    ethan_ave.append([])
-    harald_ave.append([])
-
-    for x in range(1, x_max+1):
-        ethan = Player("Ethan", leave_turn1)
-        harald = Player("Harald", leave_turn2)
-
-        players = [ethan, harald]
-
-        incan = Simulator()
-        incan.sim(10, players)
-
-        ethan_wins[y-1].append(ethan.wins)
-        harald_wins[y-1].append(harald.wins)
-        ethan_ave[y-1].append(sum(ethan.log)/len(ethan.log))
-        harald_ave[y-1].append(sum(harald.log)/len(harald.log))
-
-print("\nethan wins")
-for y in range(1, y_max+1):
-    print(ethan_wins[y-1])
-
-print("\nharald wins")
-for y in range(1, y_max+1):
-    print(harald_wins[y-1])
-
-print("\nethan ave")
-for y in range(1, y_max+1):
-    print(ethan_ave[y-1])
-
-print("\nharald ave")
-for y in range(1, y_max+1):
-    print(harald_ave[y-1])"""
-
-print("time", time.perf_counter())
