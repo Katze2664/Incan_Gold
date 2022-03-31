@@ -19,7 +19,7 @@ class Player:
         self.losses = 0
 
     def leave(self, turn):
-        return self.strat(turn, self.backpack)
+        return self.strat(self.name, turn, self.backpack)
 
 class Cards:
     def __init__(self, card_list):
@@ -165,25 +165,24 @@ class Simulator:
 
     def decide_player(self):
         if self.verbose >= 5:
-            no_one_has_left = True
+            leaving_list = []
+
         for player in self.players:
             if player.exploring:
                 if player.leave(self.turn):
                     if self.verbose >= 5:
-                        if no_one_has_left:
-                            print("Leaving:", end=" ")
-                            no_one_has_left = False
-                        print(player.name, end=" ")
+                        leaving_list.append(player.name)
                     # print("table", self.table.card_list)
                     player.exploring = False
                     self.num_exploring -= 1
                     player.leaving = True
                     self.num_leaving += 1
+
         if self.verbose >= 5:
-            if no_one_has_left:
-                print("Everybody continues exploring!")
+            if len(leaving_list) == 0:
+                print("Everyone keeps exploring")
             else:
-                print("")
+                print(f"Leaving: {', '.join(leaving_list)}")
 
     def leaving_gems(self):
         if self.num_leaving >= 1:
@@ -295,11 +294,12 @@ class Simulator:
             self.card = self.deck.move_top(self.table)
 
             if self.verbose >= 4:
-                print("Exploring:", end=" ")
+                exploring_list = []
                 for player in self.players:
                     if player.exploring:
-                        print(player.name, end=" ")
-                print(f"\nNew card: {self.card}")
+                        exploring_list.append(player.name)
+                print(f"Exploring: {', '.join(exploring_list)}")
+                print(f"New card: {self.card}")
                 print(f"Table: {self.table.card_list}")
 
             if self.check_bust():

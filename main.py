@@ -1,32 +1,22 @@
-import time
-time.perf_counter()
-from incan_gold import Player
-from incan_gold import Simulator
+from incan_gold import Player, Simulator
+from strategies import make_turn_strat, make_backpack_strat, make_random_strat, interactive_strat
 
+# alice leaves on turn 4
+turn_strat = make_turn_strat(4)
+alice = Player("Alice", turn_strat)
 
-def make_turn_strat(max_turns):
-    def turn_strat(turn, backpack):
-        return turn >= max_turns
-    return turn_strat
+# bob leaves when he has 20 or more in his backpack
+backpack_strat = make_backpack_strat(20)
+bob = Player("Bob", backpack_strat)
 
-def make_backpack_strat(max_backpack):
-    def backpack_strat(turn, backpack):
-        return backpack >= max_backpack
-    return backpack_strat
+# charlie leaves with a probability of 0.2 each turn
+random_strat = make_random_strat(0.2)
+charlie = Player("Charlie", random_strat)
 
-leave_turn_4 = make_turn_strat(4)
-leave_turn_6 = make_turn_strat(6)
-leave_turn_10 = make_turn_strat(10)
+players = [alice, bob, charlie]
 
-ethan = Player("Ethan", leave_turn_6)
-harald = Player("Harald", leave_turn_10)
-ian = Player("Ian", leave_turn_4)
+# verbose=1 will show the result after all games are complete.
+incan = Simulator(verbose=1, manual=False)
 
-players = [ethan, harald, ian]
-
-incan = Simulator(verbose=1, manual=False, seed=1)
-incan.sim(5, players)
-incan.sim(5, players)
-incan.sim(5, players)
-
-print("time", time.perf_counter())
+# plays 100 games
+incan.sim(100, players)
