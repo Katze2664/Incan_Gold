@@ -7,15 +7,15 @@ games = 1000
 
 lower = 1
 upper = 20
-turns = list(range(lower, upper + 1))
+turn_range = list(range(lower, upper + 1))
 
 score_max = []
 score_ave = []
 score_std = []
 score_min = []
 
-for i in turns:
-    turn_strat = make_turn_strat(i)
+for turn_threshold in turn_range:
+    turn_strat = make_turn_strat(turn_threshold)
     bot = Player("Bot", turn_strat)
 
     players = [bot]
@@ -28,16 +28,21 @@ for i in turns:
     score_min.append(min(bot.log))
     score_max.append(max(bot.log))
 
-for index, turn in enumerate(turns):
+for index, turn in enumerate(turn_range):
     print(f"Turns {turn}: Ave = {round(score_ave[index], 1)} +/- {round(score_std[index])}")
 
-plt.errorbar(turns, score_max, fmt="go-", label="max")
-plt.errorbar(turns, score_ave, fmt="bo-", label="average +/- std")
-plt.errorbar(turns, score_ave, yerr=score_std, fmt="bo")
-plt.errorbar(turns, score_min, fmt="ro-", label="min")
+score_ave_sorted = sorted(zip(score_ave, turn_range), reverse=True)
+print(f"\n1st - Turns {score_ave_sorted[0][1]}: Ave = {round(score_ave_sorted[0][0], 1)}")
+print(f"2nd - Turns {score_ave_sorted[1][1]}: Ave = {round(score_ave_sorted[1][0], 1)}")
+print(f"3rd - Turns {score_ave_sorted[2][1]}: Ave = {round(score_ave_sorted[2][0], 1)}")
+
+plt.errorbar(turn_range, score_max, fmt="go-", label="max")
+plt.errorbar(turn_range, score_ave, fmt="bo-", label="average +/- std")
+plt.errorbar(turn_range, score_ave, yerr=score_std, fmt="bo")
+plt.errorbar(turn_range, score_min, fmt="ro-", label="min")
 plt.legend()
-plt.xticks(turns)
-plt.xlabel("Turns")
+plt.xticks(turn_range)
+plt.xlabel("Turn Threshold")
 plt.ylabel("Score")
-plt.title("Single-player score when leaving on Turn x")
+plt.title("Single-player score when waiting for Turn Threshold")
 plt.show()

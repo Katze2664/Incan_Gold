@@ -24,7 +24,7 @@ def make_random_strat(prob_leave):
 
 # Ask user
 def interactive_strat(name, turn, backpack):
-    user = input(f"{name}, continue exploring? (y/n):")
+    user = input(f"{name}, continue exploring? (y/n): ")
     user = user.lower()
     while user not in ["", "y", "yes", "n", "no", "q", "quit", "exit"]:
         print(f"Invalid input.\n"
@@ -32,7 +32,7 @@ def interactive_strat(name, turn, backpack):
               f"For no, type n or no.\n"
               f"To quit, q or quit or exit.\n"
               f"It is not case sensitive.")
-        user = input(f"{name}, continue exploring? (y/n):")
+        user = input(f"{name}, continue exploring? (y/n): ")
         user = user.lower()
     if user in ["n", "no"]:
         return True

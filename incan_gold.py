@@ -285,7 +285,7 @@ class Simulator:
 
             if self.verbose >= 4:
                 if self.manual:
-                    input(f"\nGame {self.game}, Round {self.round}, Turn {self.turn} (press enter):")
+                    input(f"\nGame {self.game}, Round {self.round}, Turn {self.turn} (press enter): ")
                 else:
                     print(f"\nGame {self.game}, Round {self.round}, Turn {self.turn}")
 
@@ -329,7 +329,7 @@ class Simulator:
             self.game = game
             if self.verbose == 2:
                 if self.manual:
-                    input(f"\nGame {self.game} (press enter):")
+                    input(f"\nGame {self.game} (press enter): ")
                 else:
                     print(f"\nGame {self.game}")
 
@@ -339,7 +339,7 @@ class Simulator:
                 self.round = round_number
                 if self.verbose == 3:
                     if self.manual:
-                        input(f"\nGame {self.game}, Round {self.round} (press enter):")
+                        input(f"\nGame {self.game}, Round {self.round} (press enter): ")
                     else:
                         print(f"\nGame {self.game}, Round {self.round}")
 
