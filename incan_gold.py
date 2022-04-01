@@ -96,8 +96,6 @@ class Simulator:
             self.table.move_all(self.deck)
         self.reserve.move_top(self.deck)
         self.deck.shuffle()
-        # print("reverse order deck", self.deck.card_list[::-1])
-        #p-rint(self.deck.counts)
 
     def init_player_leaving(self):
         self.num_leaving = 0
@@ -114,22 +112,16 @@ class Simulator:
                 return True
 
     def busted(self):
-        # print("busted table", self.table.card_list)
         for player in self.players:
             if player.exploring:
-                # print("busted", player.name, "backpack:", player.backpack, "tent:", player.tent)
                 player.exploring = False
                 self.num_exploring -= 1
                 player.backpack = 0
-            # if self.verbose >= 5:
-            #     print(f"{player.name}'s backpack: {player.backpack}")
         self.table.move_top(self.discard)
         self.table_gem = 0
-        # print("discard", self.discard.card_list)
 
     def distribute_gems(self):
         if self.card == "artifact":
-            # print(self.card, "turn", self.turn)
             self.discard.counts.setdefault("artifact", 0)
             if self.table.counts["artifact"] + self.discard.counts["artifact"] <= 3:
                 self.table_art += 5
@@ -137,22 +129,15 @@ class Simulator:
                 self.table_art += 10
 
         if isinstance(self.card, int):
-            #p-rint("----", self.card, "num exploring", self.num_exploring)
-            counter = 0  # counter is only required for printing the first player's backpack, not required for game mechanics
             for player in self.players:
                 if player.exploring:
                     if self.verbose >= 5:
                         print(f"{player.name}'s backpack: {player.backpack} + {self.card // self.num_exploring} = {player.backpack + self.card // self.num_exploring}")
-                    # print(player.name, end=" ")
-                    #p-rint(player.name, "backpack {} + {} = {}".format(player.backpack, self.card // self.num_exploring, player.backpack + self.card // self.num_exploring))
                     player.backpack += self.card // self.num_exploring
                 else:
                     if self.verbose >= 5:
                         print(f"{player.name}'s backpack: {player.backpack}")
-                    #p-rint(player.name, player.backpack)
-            # print(f"table gem {self.table_gem} + {self.card % self.num_exploring} = {self.table_gem + self.card % self.num_exploring} turn {self.turn}")
             self.table_gem += self.card % self.num_exploring
-            #p-rint("table gem", self.table_gem)
 
         else:
             if self.verbose >= 5:
@@ -172,7 +157,6 @@ class Simulator:
                 if player.leave(self.turn):
                     if self.verbose >= 5:
                         leaving_list.append(player.name)
-                    # print("table", self.table.card_list)
                     player.exploring = False
                     self.num_exploring -= 1
                     player.leaving = True
@@ -186,14 +170,10 @@ class Simulator:
 
     def leaving_gems(self):
         if self.num_leaving >= 1:
-            #p-rint("table gem", self.table_gem, "num leaving", self.num_leaving)
             for player in self.players:
                 if player.leaving:
-                    #p-rint(player.name, "tent {} + {}".format(player.tent, self.table_gem // self.num_leaving))
                     player.backpack_leave_gem = self.table_gem // self.num_leaving
-                    #p-rint(player.name, "tent", player.tent)
             self.table_gem = self.table_gem % self.num_leaving
-            #p-rint("new table gem", self.table_gem)
 
     def leaving_artifacts(self):
         self.table.counts.setdefault("artifact", 0)
@@ -203,22 +183,16 @@ class Simulator:
                 if player.leaving:
                     while self.table.counts["artifact"] != 0:
                         if self.discard.counts["artifact"] < 3:
-                            #p-rint("{} takes artifact. Tent {} + 5".format(player.name, player.tent))
                             self.table.move_specific(self.discard, "artifact")
                             player.artifacts += 1
                             player.backpack_leave_art += 5
                             self.table_art -= 5
-                            #p-rint("{} tent {}, artifacts {}".format(player.name, player.tent, player.artifacts))
-                            # print("discard", self.discard.card_list)
 
                         else:
-                            #p-rint("{} takes artifact. Tent {} + 10".format(player.name, player.tent))
                             self.table.move_specific(self.discard, "artifact")
                             player.artifacts += 1
                             player.backpack_leave_art += 10
                             self.table_art -= 10
-                            #p-rint("{} tent {}, artifacts {}".format(player.name, player.tent, player.artifacts))
-                            # print("discard", self.discard.card_list)
                     break
 
     def store_backpack(self):
@@ -232,9 +206,7 @@ class Simulator:
             if player.leaving:
                 if self.verbose >= 5:
                     print(f"{player.name}'s backpack: {player.backpack} + {player.backpack_leave_gem} + {player.backpack_leave_art} = {player.backpack + player.backpack_leave_gem + player.backpack_leave_art}")
-                # print(f"leaving {player.name} {player.backpack} + {player.backpack_leave_gem} + {player.backpack_leave_art} = {player.backpack + player.backpack_leave_gem + player.backpack_leave_art}")
                 player.backpack += player.backpack_leave_gem + player.backpack_leave_art
-                # print(f"leaving {player.name} {player.tent} + {player.backpack} = {player.tent + player.backpack}")
 
             else:
                 if self.verbose >= 5 and someone_leaving:
@@ -243,9 +215,7 @@ class Simulator:
     def log_scores(self):
         self.max_tent = 0
         self.max_player = []
-        # print("End Game")
         for player in self.players:
-            # print(player.name, player.tent)
             player.log.append(player.tent)
             if player.tent > self.max_tent:
                 self.max_tent = player.tent
@@ -267,11 +237,6 @@ class Simulator:
             print(f"\nWinner(s): {[player.name for player in self.max_player]}")
             for player in self.players:
                 print(f"{player.name}'s score = {player.tent}")
-        # print("max tent", self.max_tent)
-        # print("max player", [player.name for player in self.max_player])
-        for player in self.players:
-            # print(f"{player.name} average {sum(player.log) / len(player.log)} wins {player.wins} draws {player.draws}")
-            pass
 
     def run_round(self):
         self.turn = 0
