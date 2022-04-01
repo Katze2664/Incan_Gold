@@ -6,8 +6,8 @@ import matplotlib.pyplot as plt
 games = 1000
 
 lower = 1
-upper = 20
-turn_range = list(range(lower, upper + 1))
+upper = 21
+turn_range = list(range(lower, upper))
 
 score_max = []
 score_ave = []

@@ -8,9 +8,9 @@ import matplotlib.pyplot as plt
 games = 100
 
 lower = 1
-upper = 100
+upper = 101
 step = 3
-backpack_range = list(range(lower, upper + 1, step))
+backpack_range = list(range(lower, upper, step))
 
 score_max = []
 score_ave = []

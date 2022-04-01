@@ -7,10 +7,10 @@ import matplotlib.pyplot as plt
 
 games = 100
 
-lower = 5
-upper = 100
-step = 5
-random_range = [i/100 for i in range(lower, upper + 1, step)]
+lower = 1
+upper = 101
+step = 3
+random_range = [i/100 for i in range(lower, upper, step)]
 
 score_max = []
 score_ave = []
