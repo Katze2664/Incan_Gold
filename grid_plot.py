@@ -2,7 +2,7 @@ import matplotlib
 import matplotlib.pyplot as plt
 import numpy as np
 
-def imshow_plot(data, y_tick_labels, x_tick_labels, x_label, y_label, title):
+def imshow_plot(data, y_tick_labels, x_tick_labels, y_label, x_label, title):
     fig, ax = plt.subplots()
     im = ax.imshow(data)
 
@@ -19,44 +19,36 @@ def imshow_plot(data, y_tick_labels, x_tick_labels, x_label, y_label, title):
     plt.show()
 
 
-def imshow_2plots(data1,
-                  y1_tick_labels,
-                  x1_tick_labels,
-                  y1_label,
-                  x1_label,
-                  title1,
-                  data2,
-                  y2_tick_labels,
-                  x2_tick_labels,
-                  y2_label,
-                  x2_label,
-                  title2):
+def imshow_multiplot(dicts, rows, cols):
+    data = []
+    y_tick_labels = []
+    x_tick_labels = []
+    y_label = []
+    x_label = []
+    title = []
 
-    fig, (ax1, ax2) = plt.subplots(1, 2)
-    im1 = ax1.imshow(data1)
+    for item in dicts:
+        data.append(item["data"])
+        y_tick_labels.append(item["y_tick_labels"])
+        x_tick_labels.append(item["x_tick_labels"])
+        y_label.append(item["y_label"])
+        x_label.append(item["x_label"])
+        title.append(item["title"])
 
-    ax1.set_yticks(np.arange(len(y1_tick_labels)), labels=y1_tick_labels)
-    ax1.set_xticks(np.arange(len(x1_tick_labels)), labels=x1_tick_labels)
+    fig, axs = plt.subplots(rows, cols)
+    for i, ax in enumerate(axs.flat):
+        im = ax.imshow(data[i])
 
-    for y in np.arange(len(y1_tick_labels)):
-        for x in np.arange(len(x1_tick_labels)):
-            ax1.text(x, y, data1[y, x], ha="center", va="center", color="w")
+        ax.set_yticks(np.arange(len(y_tick_labels[i])), labels=y_tick_labels[i])
+        ax.set_xticks(np.arange(len(x_tick_labels[i])), labels=x_tick_labels[i])
 
-    ax1.set_ylabel(y1_label)
-    ax1.set_xlabel(x1_label)
-    ax1.set_title(title1)
+        for y in np.arange(len(y_tick_labels[i])):
+            for x in np.arange(len(x_tick_labels[i])):
+                ax.text(x, y, data[i][y, x], ha="center", va="center", color="w")
 
-    im2 = ax2.imshow(data2)
+        ax.set_ylabel(y_label[i])
+        ax.set_xlabel(x_label[i])
+        ax.set_title(title[i])
 
-    ax2.set_yticks(np.arange(len(y2_tick_labels)), labels=y2_tick_labels)
-    ax2.set_xticks(np.arange(len(x2_tick_labels)), labels=x2_tick_labels)
-
-    for y in np.arange(len(y2_tick_labels)):
-        for x in np.arange(len(x2_tick_labels)):
-            ax2.text(x, y, data2[y, x], ha="center", va="center", color="w")
-
-    ax2.set_ylabel(y2_label)
-    ax2.set_xlabel(x2_label)
-    ax2.set_title(title2)
     fig.tight_layout()
     plt.show()

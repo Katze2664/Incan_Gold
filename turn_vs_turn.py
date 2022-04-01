@@ -1,6 +1,6 @@
 from incan_gold import Player, Simulator
 from strategies import make_turn_strat
-from grid_plot import imshow_plot, imshow_2plots
+from grid_plot import imshow_multiplot
 import numpy as np
 
 
@@ -50,6 +50,19 @@ for alice_turn_threshold in alice_turn_range:
         bob_loss_percent[alice_turn_threshold, bob_turn_threshold] = round(100 * bob.losses / n, 1)
         bob_score_ave[alice_turn_threshold, bob_turn_threshold] = round(sum(bob.log) / n, 1)
 
+generic_dict = {"y_tick_labels": alice_turn_range,
+                "x_tick_labels": bob_turn_range,
+                "y_label": "Alice's Turn Threshold",
+                "x_label": "Bob's Turn Threshold"}
+
+alice_win_dict = generic_dict.copy()
+alice_win_dict["title"] = "Alice's Win Percentage"
+alice_win_dict["data"] = alice_win_percent[alice_lower:, bob_lower:]
+
+bob_win_dict = generic_dict.copy()
+bob_win_dict["title"] = "Bob's Win Percentage"
+bob_win_dict["data"] = bob_win_percent[alice_lower:, bob_lower:]
+
 print("alice_win_percent")
 print(alice_win_percent)
 alice_cropped = alice_win_percent[alice_lower:, bob_lower:]
@@ -60,18 +73,7 @@ print(bob_win_percent)
 bob_cropped = bob_win_percent[alice_lower:, bob_lower:]
 print(bob_cropped)
 
-imshow_2plots(alice_cropped,
-              alice_turn_range,
-              bob_turn_range,
-              "Alice's Turn Threshold",
-              "Bob's Turn Threshold",
-              "Alice's Win Percentage",
-              bob_cropped,
-              alice_turn_range,
-              bob_turn_range,
-              "Alice's Turn Threshold",
-              "Bob's Turn Threshold",
-              "Bob's Win Percentage")
+imshow_multiplot([alice_win_dict, bob_win_dict], 1, 2)
 
 
 
