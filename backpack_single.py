@@ -50,6 +50,6 @@ plt.xlabel("Backpack Threshold")
 plt.ylabel("Score")
 plt.title("Single-player score when waiting for Backpack Threshold")
 
-print("time", time.perf_counter())
+print("Time:", time.perf_counter())
 
 plt.show()

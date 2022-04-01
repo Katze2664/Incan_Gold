@@ -1,15 +1,20 @@
+import time
+time.perf_counter()
 from incan_gold import Player, Simulator
 from strategies import make_turn_strat
-from grid_plot import imshow_multiplot
+from grid_plot import imshow_multiplot, imshow_dict
 import numpy as np
 
+games = 100
 
-games = 10
-
-alice_lower = 4
+alice_lower = 1
 alice_upper = 11
-bob_lower = 4
+bob_lower = 1
 bob_upper = 11
+
+printer = True
+text = True
+
 
 alice_turn_range = list(range(alice_lower, alice_upper))
 bob_turn_range = list(range(bob_lower, bob_upper))
@@ -39,100 +44,36 @@ for alice_turn_threshold in alice_turn_range:
         incan.sim(games, players)
 
         n = len(alice.log)
-        alice_win_percent[alice_turn_threshold, bob_turn_threshold] = round(100 * alice.wins / n, 1)
-        alice_draw_percent[alice_turn_threshold, bob_turn_threshold] = round(100 * alice.draws / n, 1)
-        alice_loss_percent[alice_turn_threshold, bob_turn_threshold] = round(100 * alice.losses / n, 1)
-        alice_score_ave[alice_turn_threshold, bob_turn_threshold] = round(sum(alice.log) / n, 1)
+        alice_win_percent[alice_turn_threshold, bob_turn_threshold] = round(100 * alice.wins / n)
+        alice_draw_percent[alice_turn_threshold, bob_turn_threshold] = round(100 * alice.draws / n)
+        alice_loss_percent[alice_turn_threshold, bob_turn_threshold] = round(100 * alice.losses / n)
+        alice_score_ave[alice_turn_threshold, bob_turn_threshold] = round(sum(alice.log) / n)
 
         n = len(bob.log)
-        bob_win_percent[alice_turn_threshold, bob_turn_threshold] = round(100 * bob.wins / n, 1)
-        bob_draw_percent[alice_turn_threshold, bob_turn_threshold] = round(100 * bob.draws / n, 1)
-        bob_loss_percent[alice_turn_threshold, bob_turn_threshold] = round(100 * bob.losses / n, 1)
-        bob_score_ave[alice_turn_threshold, bob_turn_threshold] = round(sum(bob.log) / n, 1)
+        bob_win_percent[alice_turn_threshold, bob_turn_threshold] = round(100 * bob.wins / n)
+        bob_draw_percent[alice_turn_threshold, bob_turn_threshold] = round(100 * bob.draws / n)
+        bob_loss_percent[alice_turn_threshold, bob_turn_threshold] = round(100 * bob.losses / n)
+        bob_score_ave[alice_turn_threshold, bob_turn_threshold] = round(sum(bob.log) / n)
 
 generic_dict = {"y_tick_labels": alice_turn_range,
                 "x_tick_labels": bob_turn_range,
                 "y_label": "Alice's Turn Threshold",
                 "x_label": "Bob's Turn Threshold"}
 
-alice_win_dict = generic_dict.copy()
-alice_win_dict["title"] = "Alice's Win Percentage"
-alice_win_dict["data"] = alice_win_percent[alice_lower:, bob_lower:]
+dicts = [imshow_dict(generic_dict, alice_win_percent[alice_lower:, bob_lower:], "Alice's Win Percentage"),
+         imshow_dict(generic_dict, alice_draw_percent[alice_lower:, bob_lower:], "Alice's Draw Percentage"),
+         imshow_dict(generic_dict, alice_loss_percent[alice_lower:, bob_lower:], "Alice's Loss Percentage"),
+         imshow_dict(generic_dict, alice_score_ave[alice_lower:, bob_lower:], "Alice's Score Average"),
+         imshow_dict(generic_dict, bob_win_percent[alice_lower:, bob_lower:], "Bob's Win Percentage"),
+         imshow_dict(generic_dict, bob_draw_percent[alice_lower:, bob_lower:], "Bob's Draw Percentage"),
+         imshow_dict(generic_dict, bob_loss_percent[alice_lower:, bob_lower:], "Bob's Loss Percentage"),
+         imshow_dict(generic_dict, bob_score_ave[alice_lower:, bob_lower:], "Bob's Score Average")]
 
-bob_win_dict = generic_dict.copy()
-bob_win_dict["title"] = "Bob's Win Percentage"
-bob_win_dict["data"] = bob_win_percent[alice_lower:, bob_lower:]
+if printer:
+    for item in dicts:
+        print(item["title"])
+        print(item["data"])
 
-print("alice_win_percent")
-print(alice_win_percent)
-alice_cropped = alice_win_percent[alice_lower:, bob_lower:]
-print(alice_cropped)
+print("Time:", time.perf_counter())
 
-print("bob_win_percent")
-print(bob_win_percent)
-bob_cropped = bob_win_percent[alice_lower:, bob_lower:]
-print(bob_cropped)
-
-imshow_multiplot([alice_win_dict, bob_win_dict], 1, 2)
-
-
-
-
-
-# fig, ax = plt.subplots()
-# im = ax.imshow(alice_win_percent[alice_lower:, bob_lower:])
-#
-# ax.set_yticks(np.arange(len(alice_turn_range)), labels=alice_turn_range)
-# ax.set_xticks(np.arange(len(bob_turn_range)), labels=bob_turn_range)
-#
-# for y in np.arange(len(alice_turn_range)):
-#     for x in np.arange(len(bob_turn_range)):
-#         ax.text(x, y, alice_cropped[y, x], ha="center", va="center", color="w")
-#
-# ax.set_title("Alice's Win Percentage")
-# ax.set_ylabel("Alice's Turn Threshold")
-# ax.set_xlabel("Bob's Turn Threshold")
-# fig.tight_layout()
-# plt.show()
-
-# print("alice_draw_percent")
-# print(alice_draw_percent)
-# print("alice_loss_percent")
-# print(alice_loss_percent)
-# print("alice_score_ave")
-# print(alice_score_ave)
-#
-#
-# print("bob_win_percent")
-# print(bob_win_percent)
-# print("bob_draw_percent")
-# print(bob_draw_percent)
-# print("bob_loss_percent")
-# print(bob_loss_percent)
-# print("bob_score_ave")
-# print(bob_score_ave)
-
-
-
-
-
-
-
-# for index, turn in enumerate(turn_range):
-#     print(f"Turns {turn}: Ave = {round(score_ave[index], 1)} +/- {round(score_std[index])}")
-#
-# score_ave_sorted = sorted(zip(score_ave, turn_range), reverse=True)
-# print(f"\n1st - Turns {score_ave_sorted[0][1]}: Ave = {round(score_ave_sorted[0][0], 1)}")
-# print(f"2nd - Turns {score_ave_sorted[1][1]}: Ave = {round(score_ave_sorted[1][0], 1)}")
-# print(f"3rd - Turns {score_ave_sorted[2][1]}: Ave = {round(score_ave_sorted[2][0], 1)}")
-#
-# plt.errorbar(turn_range, score_max, fmt="go-", label="max")
-# plt.errorbar(turn_range, score_ave, fmt="bo-", label="average +/- std")
-# plt.errorbar(turn_range, score_ave, yerr=score_std, fmt="bo")
-# plt.errorbar(turn_range, score_min, fmt="ro-", label="min")
-# plt.legend()
-# plt.xticks(turn_range)
-# plt.xlabel("Turn Threshold")
-# plt.ylabel("Score")
-# plt.title("Single-player score when waiting for Turn Threshold")
-# plt.show()
+imshow_multiplot(dicts, 2, 4, text=text)
