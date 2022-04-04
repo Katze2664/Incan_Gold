@@ -1,4 +1,14 @@
-from incan_gold import Simulator
+from game_mechanics import Simulator
+
+# This code is incomplete and under development.
+
+# It is for estimating probabilities that are relevant for more complicated decision strategies, such as:
+# the probability that the next card will cause a bust,
+# the value of gems remaining when split between the number of players currently exploring,
+# the probability that n players will leave this turn assuming the probability is known for each player individually
+# the expected value of the next card assuming a probability distribution over n players leaving this turn,
+# the expected value of an artifact assuming a probability distribution over n players leaving this turn,.
+
 
 class ProbabilitySimulator(Simulator):
     def __init__(self):
